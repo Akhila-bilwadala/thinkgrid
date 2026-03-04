@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Users,
-    MessageSquare,
-    Plus,
-    Flame,
-    Hash,
-    CheckCircle2,
-    ChevronRight,
-    Search
-} from 'lucide-react';
+import { Search, Plus, Image as ImageIcon } from 'lucide-react';
 import './Rooms.css';
 
 const ROOMS = [
@@ -16,76 +7,51 @@ const ROOMS = [
         id: 1,
         name: 'Placement Prep 2026',
         description: 'Mock interviews, resume reviews, and daily DSA challenges.',
-        members: 1240,
-        posts: 89,
-        tags: ['DSA', 'SDE', 'HR'],
-        joined: true,
-        hot: true,
-        gradient: 'linear-gradient(135deg, #FF3E6C 0%, #FFD080 100%)'
+        image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
+        joined: true
     },
     {
         id: 2,
         name: 'DSA Beginners',
         description: 'Start your journey with basic pointers, arrays and recursion.',
-        members: 850,
-        posts: 124,
-        tags: ['Arrays', 'Logic'],
-        joined: true,
-        hot: true,
-        gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+        image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80',
+        joined: true
     },
     {
         id: 3,
         name: 'GATE CSE Masterclass',
         description: 'Focusing on Theory of Computation and OS concepts.',
-        members: 420,
-        posts: 45,
-        tags: ['GATE', 'Theory'],
-        joined: false,
-        hot: false,
-        gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
+        joined: false
     },
     {
         id: 4,
         name: 'ML & AI Discussion',
         description: 'Papers, neural networks, and PyTorch workshops.',
-        members: 2100,
-        posts: 312,
-        tags: ['ML', 'Research'],
-        joined: false,
-        hot: true,
-        gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+        image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&q=80',
+        joined: false
     },
     {
         id: 5,
         name: 'Web Dev Hangout',
         description: 'Building fullstack apps with Next.js and Tailwind.',
-        members: 1670,
-        posts: 156,
-        tags: ['React', 'Node'],
-        joined: false,
-        hot: false,
-        gradient: 'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)'
+        image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80',
+        joined: false
     },
     {
         id: 6,
         name: 'System Design Club',
         description: 'Scaling architectures, load balancing, and DB sharding.',
-        members: 890,
-        posts: 78,
-        tags: ['Scalability', 'DB'],
-        joined: false,
-        hot: true,
-        gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)'
+        image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
+        joined: false
     }
 ];
 
-export default function Rooms() {
-    const [tab, setTab] = useState('all');
+export default function Rooms({ currentTab }) {
+    const [searchQuery, setSearchQuery] = useState('');
     const [joinedRooms, setJoinedRooms] = useState(() =>
         new Set(ROOMS.filter(r => r.joined).map(r => r.id))
     );
-    const [searchQuery, setSearchQuery] = useState('');
 
     const toggleJoin = (id) => {
         setJoinedRooms(prev => {
@@ -97,111 +63,49 @@ export default function Rooms() {
     };
 
     const displayed = ROOMS.filter(r => {
-        const matchesTab = tab === 'all' ? true : tab === 'joined' ? joinedRooms.has(r.id) : r.hot;
         const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesTab && matchesSearch;
+        const matchesTab = currentTab === 'my-rooms' ? joinedRooms.has(r.id) : true;
+        return matchesSearch && matchesTab;
     });
 
     return (
         <div className="rooms-container">
-            {/* Immersive Header */}
-            <div className="rooms-header-glass">
-                <div className="header-content">
-                    <h1 className="header-title">Discussion Rooms</h1>
-                    <p className="header-subtitle">Join topic-based communities to collaborate and grow together.</p>
+            {/* Header */}
+            <div className="rooms-header-block">
+                <div className="rooms-header-text">
+                    <h1>{currentTab === 'my-rooms' ? 'My Rooms' : 'Skill Exchange / Rooms'}</h1>
+                    <p>{currentTab === 'my-rooms' ? 'Communities you are currently participating in.' : 'Connect with peers to share knowledge and discuss topics.'}</p>
                 </div>
-                <button className="create-room-btn">
-                    <Plus size={20} />
-                    <span>Create New Room</span>
-                </button>
-            </div>
-
-            {/* Navigation & Filters */}
-            <div className="rooms-toolbar">
-                <div className="rooms-tabs-glass">
-                    <button
-                        className={`rooms-tab ${tab === 'all' ? 'active' : ''}`}
-                        onClick={() => setTab('all')}
-                    >
-                        All Communities
-                    </button>
-                    <button
-                        className={`rooms-tab ${tab === 'joined' ? 'active' : ''}`}
-                        onClick={() => setTab('joined')}
-                    >
-                        My Rooms ({joinedRooms.size})
-                    </button>
-                    <button
-                        className={`rooms-tab ${tab === 'hot' ? 'active' : ''}`}
-                        onClick={() => setTab('hot')}
-                    >
-                        <Flame size={16} />
-                        <span>Trending</span>
-                    </button>
-                </div>
-
                 <div className="rooms-search-wrapper">
                     <Search size={18} />
                     <input
-                        placeholder="Search for rooms..."
+                        placeholder="Search rooms..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
             </div>
 
-            {/* Rooms Grid */}
-            <div className="rooms-grid">
+            {/* Cards Grid */}
+            <div className="rooms-wf-grid">
                 {displayed.map(r => (
-                    <div key={r.id} className="room-card-glass">
-                        <div className="room-card-inner">
-                            <div className="room-header">
-                                <div className="room-icon-box" style={{ background: r.gradient }}>
-                                    <Hash size={24} color="white" />
-                                </div>
-                                {r.hot && <div className="hot-tag"><Flame size={12} /> HOT</div>}
-                            </div>
+                    <div key={r.id} className="room-wf-card">
+                        {/* Cover Image Placeholder */}
+                        <div className="room-wf-cover">
+                            <img src={r.image} alt={r.name} className="room-wf-image" />
+                        </div>
 
-                            <div className="room-body">
-                                <h3 className="room-name">{r.name}</h3>
-                                <p className="room-desc">{r.description}</p>
+                        {/* Content */}
+                        <div className="room-wf-content">
+                            <h3 className="room-wf-title">{r.name}</h3>
+                            <p className="room-wf-desc">{r.description}</p>
 
-                                <div className="room-tags">
-                                    {r.tags.map(tag => (
-                                        <span key={tag} className="room-tag-pill">#{tag}</span>
-                                    ))}
-                                </div>
-
-                                <div className="room-stats-row">
-                                    <div className="room-stat">
-                                        <Users size={14} />
-                                        <span>{r.members.toLocaleString()}</span>
-                                    </div>
-                                    <div className="room-stat">
-                                        <MessageSquare size={14} />
-                                        <span>{r.posts} posts today</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="room-footer">
-                                <button
-                                    className={`join-btn ${joinedRooms.has(r.id) ? 'joined' : ''}`}
-                                    onClick={() => toggleJoin(r.id)}
-                                >
-                                    {joinedRooms.has(r.id) ? (
-                                        <>
-                                            <CheckCircle2 size={16} />
-                                            <span>Member</span>
-                                        </>
-                                    ) : (
-                                        <span>Join Room</span>
-                                    )}
-                                </button>
-                                <button className="enter-room-btn" title="Enter Community">
-                                    <ChevronRight size={20} />
-                                </button>
-                            </div>
+                            <button
+                                className={`room-wf-action ${joinedRooms.has(r.id) ? 'joined' : ''}`}
+                                onClick={() => toggleJoin(r.id)}
+                            >
+                                {joinedRooms.has(r.id) ? 'Joined' : 'Join Room'}
+                            </button>
                         </div>
                     </div>
                 ))}
