@@ -1,149 +1,207 @@
 import React, { useState } from 'react';
+import { Send, RefreshCw, Users, BookOpen, Zap, Star, ArrowRight, CheckCircle, Shield, MapPin, Award, TrendingUp } from 'lucide-react';
 import './Home.css';
 
-
-const TRENDING_TOPICS = [
-    { id: 1, name: 'AI & Machine Learning', icon: '🤖', growth: '+12%', learners: '4.2k active', color: '#FF3E6C' },
-    { id: 2, name: 'Fullstack Development', icon: '💻', growth: '+8%', learners: '3.1k active', color: '#4facfe' },
-    { id: 3, name: 'Data Structures & Algos', icon: '🧠', growth: '+15%', learners: '5.6k active', color: '#FACC15' },
-    { id: 4, name: 'Cloud Architecture', icon: '☁️', growth: '+5%', learners: '1.2k active', color: '#4ade80' },
+const QUICK_SHORTCUTS = [
+    { id: 'explore', label: 'Materials Hub', desc: 'Browse study resources', icon: <BookOpen size={28} />, color: '#F3F4F6' },
+    { id: 'rooms', label: 'Skill Exchange', desc: 'Trade & learn skills', icon: <RefreshCw size={28} />, color: '#F3F4F6' },
+    { id: 'labs', label: 'Active Labs', desc: 'Join live sessions', icon: <Zap size={28} />, color: '#F3F4F6' },
 ];
 
-const PROJECT_SHOWCASE = [
-    {
-        id: 1,
-        title: 'Neural Network Visualization Lab',
-        category: 'Research',
-        contributors: 12,
-        active: true,
-        preview: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop',
-        tags: ['AI', 'Python', 'WebGPU']
-    },
-    {
-        id: 2,
-        title: 'Distributed Systems Study Guide',
-        category: 'Document',
-        contributors: 45,
-        active: false,
-        preview: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop',
-        tags: ['Architecture', 'Notes']
-    },
-    {
-        id: 3,
-        title: 'Open-Source UI Library',
-        category: 'Development',
-        contributors: 8,
-        active: true,
-        preview: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop',
-        tags: ['React', 'CSS', 'Glassmorphism']
-    },
-    {
-        id: 4,
-        title: 'Quantum Computing Fundamentals',
-        category: 'Lab',
-        contributors: 5,
-        active: true,
-        preview: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&h=400&fit=crop',
-        tags: ['Physics', 'Qiskit']
-    },
-];
-
-export default function Home() {
-    const [activeTab, setActiveTab] = useState('Active Labs');
+export default function Home({ onNavigate }) {
+    const [skillTarget, setSkillTarget] = useState('');
+    const [skillType, setSkillType] = useState('');
+    const [credits, setCredits] = useState('50');
+    const [requestTab, setRequestTab] = useState('request');
 
     return (
-        <div className="home-container">
-            {/* Hero Section */}
-            <div className="home-hero-grid">
-                <div className="feature-card card">
-                    <div className="feature-tag">#TRENDING</div>
-                    <div className="feature-content">
-                        <h1 className="feature-title">Optimize your skills anywhere anytime</h1>
-                        <p className="feature-sub">Learn from top industry mentors on ThinkGrid and accelerate your tech career.</p>
-                        <button className="btn-feature">Watch Now</button>
+        <div className="dash-layout">
+
+            {/* ── LEFT COLUMN ── */}
+            <div className="dash-col dash-col-left">
+
+                {/* Skill Points Card */}
+                <div className="dash-card points-card">
+                    <div className="card-label-row">
+                        <span className="card-label">Skill Points</span>
+                        <div className="points-icon-btn">
+                            <Star size={14} />
+                        </div>
                     </div>
-                    <div className="feature-image">
-                        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&h=600&fit=crop" alt="Learning" />
+                    <div className="points-amount">2,840 <span className="points-unit">pts</span></div>
+                    <div className="points-stats">
+                        <span className="stat-up">↗ +320 earned</span>
+                        <span className="stat-down">↘ −90 spent</span>
                     </div>
                 </div>
 
-                <div className="trending-topics-panel card">
-                    <div className="panel-head">
-                        <h3 className="panel-title">Trending Topics</h3>
-                        <span className="view-all">Explore</span>
+                {/* Profile Info Card */}
+                <div className="dash-card info-card">
+                    <div className="card-label-row">
+                        <span className="card-label">My Profile</span>
+                        <button className="icon-action-btn">✏️</button>
                     </div>
-                    <div className="topics-list">
-                        {TRENDING_TOPICS.map(topic => (
-                            <div key={topic.id} className="topic-row">
-                                <div className="topic-icon-box" style={{ background: `${topic.color}15`, color: topic.color }}>
-                                    {topic.icon}
-                                </div>
-                                <div className="topic-info">
-                                    <div className="topic-name">#{topic.name.replace(/\s+/g, '_')}</div>
-                                    <div className="topic-meta">
-                                        <span className="topic-learners">{topic.learners}</span>
-                                        <span className="topic-growth" style={{ color: topic.color }}>{topic.growth}</span>
-                                    </div>
-                                </div>
-                                <div className="topic-arrow">→</div>
+                    <div className="info-rows">
+                        <div className="info-row">
+                            <MapPin size={14} className="info-icon" />
+                            <span className="info-key">Location</span>
+                            <span className="info-val">Hyderabad</span>
+                        </div>
+                        <div className="info-row">
+                            <Award size={14} className="info-icon" />
+                            <span className="info-key">Top Skill</span>
+                            <span className="info-val">React.js</span>
+                        </div>
+                        <div className="info-row">
+                            <Users size={14} className="info-icon" />
+                            <span className="info-key">Rank</span>
+                            <span className="info-val">Mentor #42</span>
+                        </div>
+                        <div className="info-row">
+                            <TrendingUp size={14} className="info-icon" />
+                            <span className="info-key">Streak</span>
+                            <span className="info-val">12 days 🔥</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Account Status Card */}
+                <div className="dash-card status-card">
+                    <div className="card-label-row">
+                        <span className="card-label">Account Status</span>
+                        <span className="three-dots">···</span>
+                    </div>
+                    <div className="status-row">
+                        <div className="status-icon verified">
+                            <Shield size={14} />
+                        </div>
+                        <span className="status-text">Identity Verified</span>
+                        <div className="status-toggle active-toggle" />
+                    </div>
+                    <div className="status-row">
+                        <div className="status-icon">
+                            <Star size={14} />
+                        </div>
+                        <span className="status-text">Mentor Badge</span>
+                        <button className="btn-status-action">Upgrade</button>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* ── MIDDLE COLUMN ── */}
+            <div className="dash-col dash-col-mid">
+
+                {/* Member Card + Quick Stats */}
+                <div className="member-card-wrapper">
+                    <div className="member-card">
+                        <div className="member-card-bg" />
+                        <div className="member-card-content">
+                            <div className="mc-brand">
+                                <div className="mc-logo-dot" />
+                                <span>thinkgrid</span>
                             </div>
-                        ))}
+                            <div className="mc-chips">
+                                <span>2.8k</span>
+                                <span>350</span>
+                                <span>92</span>
+                                <span>18</span>
+                            </div>
+                            <div className="mc-points">2,840 pts</div>
+                            <div className="mc-meta">
+                                <div className="mc-avatar" />
+                                <span className="mc-name">ThinkGrid Pro</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Project Showcase Sections */}
-            <div className="trending-header">
-                <div className="section-labels">
-                    <span className="label-prefix">COLLABORATE</span>
-                    <h2 className="section-main-title">#ActiveProjectLabs</h2>
-                </div>
-                <div className="section-actions">
-                    <span className="action-view">View All Labs</span>
-                </div>
-            </div>
+                {/* Collaboration Panel */}
+                <div className="dash-card collab-card">
+                    <div className="card-label-row">
+                        <span className="card-label">Start Collaboration</span>
+                    </div>
 
-            {/* Filter Tabs */}
-            <div className="filter-bar">
-                <div className="tabs">
-                    {['Active Labs'].map(t => (
+                    {/* Tabs */}
+                    <div className="collab-tabs">
                         <button
-                            key={t}
-                            className={`tab-btn ${activeTab === t ? 'active' : ''}`}
-                            onClick={() => setActiveTab(t)}
+                            className={`ctab ${requestTab === 'request' ? 'active' : ''}`}
+                            onClick={() => setRequestTab('request')}
                         >
-                            {t}
+                            Request Skill
                         </button>
-                    ))}
+                        <button
+                            className={`ctab ${requestTab === 'offer' ? 'active' : ''}`}
+                            onClick={() => setRequestTab('offer')}
+                        >
+                            Offer Skill
+                        </button>
+                    </div>
+
+                    <div className="collab-body">
+                        <label className="input-label">Find a Mentor or Peer</label>
+                        <input
+                            className="collab-input"
+                            placeholder="Enter username or skill (e.g. React.js, AI)"
+                            value={skillTarget}
+                            onChange={e => setSkillTarget(e.target.value)}
+                        />
+                        <p className="input-hint">Search for a mentor or start an open request.</p>
+
+                        <div className="collab-row-2">
+                            <div className="input-group-half">
+                                <label className="input-label">Credits to Offer</label>
+                                <div className="number-input">
+                                    <span className="n-currency">⚡</span>
+                                    <input
+                                        type="number"
+                                        value={credits}
+                                        onChange={e => setCredits(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="input-group-half">
+                                <label className="input-label">Skill Topic</label>
+                                <input
+                                    className="collab-input"
+                                    placeholder="e.g. Machine Learning"
+                                    value={skillType}
+                                    onChange={e => setSkillType(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="collab-fee-row">
+                            <span>Platform Fee: <strong>5 pts</strong></span>
+                            <span>Total: <strong>{Math.max(0, parseInt(credits || 0) + 5)} pts</strong></span>
+                        </div>
+
+                        <button className="btn-send-collab">
+                            <Send size={15} />
+                            Send Request
+                        </button>
+                    </div>
                 </div>
-                <button className="btn-filter">
-                    <span>Filter</span>
-                </button>
             </div>
 
-            {/* Showcase Grid */}
-            <div className="showcase-grid">
-                {PROJECT_SHOWCASE.map(project => (
-                    <div key={project.id} className="showcase-card">
-                        <div className="showcase-thumb">
-                            <img src={project.preview} alt={project.title} />
-                            {project.active && <div className="active-lab-badge">Live Lab</div>}
-                            <div className="contributors-pill">👥 {project.contributors} Collaborators</div>
+            {/* ── RIGHT COLUMN ── */}
+            <div className="dash-col dash-col-right">
+                {QUICK_SHORTCUTS.map(sc => (
+                    <button
+                        key={sc.id}
+                        className="shortcut-card"
+                        onClick={() => onNavigate && onNavigate(sc.id)}
+                    >
+                        <div className="sc-icon">{sc.icon}</div>
+                        <div className="sc-text">
+                            <span className="sc-label">{sc.label}</span>
+                            <span className="sc-desc">{sc.desc}</span>
                         </div>
-                        <div className="showcase-meta">
-                            <div className="showcase-type">{project.category}</div>
-                            <h4 className="showcase-title">{project.title}</h4>
-                            <p className="showcase-desc">Collaborate on research, share live documents, and build together in real-time.</p>
-                            <div className="showcase-tags">
-                                {project.tags.map(tag => (
-                                    <span key={tag} className="project-tag">{tag}</span>
-                                ))}
-                            </div>
-                            <button className="btn-join-lab">Join Lab</button>
-                        </div>
-                    </div>
+                        <ArrowRight size={16} className="sc-arrow" />
+                    </button>
                 ))}
             </div>
+
         </div>
     );
 }
