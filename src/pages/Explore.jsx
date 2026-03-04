@@ -1,121 +1,81 @@
 import React, { useState } from 'react';
-import {
-    Search,
-    UserPlus,
-    MessageSquare,
-    Repeat,
-    MoreHorizontal,
-    MonitorPlay,
-    Users,
-    X,
-    Check
-} from 'lucide-react';
+import { Search, MoreVertical, Github, Linkedin } from 'lucide-react';
 import './Explore.css';
 
-const USERS = [
+const CONTRIBUTORS = [
     {
-        id: 1,
-        name: 'Dr. Sarah Venn',
-        role: 'Professor | SQL & DBMS Specialist',
-        inst: 'Anna University',
-        headline: 'Professor of Computer Science | Helped 2000+ students master Databases | Open for Research Collaboration.',
-        avatar: '👩‍🏫',
-        banner: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
-        mutual: 15,
-        followedBy: ['Ravi', 'Sneha'],
-        category: 'Professor'
+        id: 1, name: 'Dr. Sarah Venn', email: 'sarah.venn@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=1', progress: 100,
+        role: 'SQL & DBMS Specialist', category: 'Professor'
     },
     {
-        id: 2,
-        name: 'Ravi Kumar',
-        role: 'Full Stack Developer | Python Expert',
-        inst: 'VIT Vellore',
-        headline: 'MERN Stack Enthusiast | Python Mentor @ ThinkGrid | Building scalable web apps with 3+ years experience.',
-        avatar: '🧑‍💻',
-        banner: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80',
-        mutual: 24,
-        followedBy: ['Arjun', 'Kevin'],
-        category: 'Mentor'
+        id: 2, name: 'Ravi Kumar', email: 'ravi.k@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=3', progress: 82,
+        role: 'Python Mentor', category: 'Mentor'
     },
     {
-        id: 3,
-        name: 'Sneha Reddy',
-        role: 'Data Scientist | Machine Learning',
-        inst: 'BITS Pilani',
-        headline: 'Data Scientist @ TechInd | ML Research Fellow | I teach SQL and Data Analysis for free.',
-        avatar: '👩‍💻',
-        banner: 'https://images.unsplash.com/photo-1551288049-bbda48658a7d?w=800&q=80',
-        mutual: 8,
-        followedBy: ['Sarah', 'Priya'],
-        category: 'Senior'
+        id: 3, name: 'Sneha Reddy', email: 'sneha.r@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=5', progress: 66,
+        role: 'ML Researcher', category: 'Senior'
     },
     {
-        id: 4,
-        name: 'Arjun Singh',
-        role: 'Backend Engineer | Java & Spring',
-        inst: 'NIT Trichy',
-        headline: 'Java Expert | Spring Boot Developer | Open for collaborative projects in FinTech domain.',
-        avatar: '🧑‍🎓',
-        banner: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
-        mutual: 12,
-        followedBy: ['Ravi', 'Sneha'],
-        category: 'Student'
+        id: 4, name: 'Arjun Singh', email: 'arjun.s@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=8', progress: 45,
+        role: 'Backend Engineer', category: 'Student'
     },
     {
-        id: 5,
-        name: 'Kevin D\'Souza',
-        role: 'Competitive Coder | DSA Mentor',
-        inst: 'SRMIST',
-        headline: '6-star Coder | DSA Mentor at SRMIST | Specialized in C++ and Advanced Data Structures.',
-        avatar: '👨‍💻',
-        banner: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80',
-        mutual: 31,
-        followedBy: ['Arjun', 'Sneha'],
-        category: 'Mentor'
+        id: 5, name: "Kevin D'Souza", email: 'kevin.d@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=11', progress: 91,
+        role: 'DSA Mentor', category: 'Mentor'
     },
     {
-        id: 6,
-        name: 'Priya Sharma',
-        role: 'UX/UI Designer | Creative Lead',
-        inst: 'Amity University',
-        headline: 'Product Designer | Design Mentor | Crafting premium experiences with user-centric design principles.',
-        avatar: '👩‍🎓',
-        banner: 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&q=80',
-        mutual: 5,
-        followedBy: ['Sarah', 'Sneha'],
-        category: 'Senior'
+        id: 6, name: 'Priya Sharma', email: 'priya.s@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=9', progress: 58,
+        role: 'UX/UI Designer', category: 'Senior'
+    },
+    {
+        id: 7, name: 'James Wilson', email: 'james.w@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=12', progress: 74,
+        role: 'OS Specialist', category: 'Professor'
+    },
+    {
+        id: 8, name: 'Ananya Iyer', email: 'ananya.i@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=20', progress: 37,
+        role: 'Cloud Architect', category: 'Student'
+    },
+    {
+        id: 9, name: 'Deepak Nair', email: 'deepak.n@thinkgrid.com',
+        avatar: 'https://i.pravatar.cc/120?img=15', progress: 100,
+        role: 'DevOps Engineer', category: 'Mentor'
     }
 ];
 
 export default function Explore() {
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
-    const [followed, setFollowed] = useState({});
 
-    const filtered = USERS.filter(u =>
+    const filtered = CONTRIBUTORS.filter(u =>
         (category === 'All' || u.category === category) &&
         (u.name.toLowerCase().includes(query.toLowerCase()) || u.role.toLowerCase().includes(query.toLowerCase()))
     );
 
     return (
-        <div className="explore-container">
-            {/* Header / Search Area */}
-            <div className="explore-header-section">
-                <div className="search-glass-wrapper">
-                    <Search className="glass-search-icon" size={20} />
+        <div className="mhub-container">
+            {/* Toolbar */}
+            <div className="mhub-toolbar">
+                <div className="mhub-search">
+                    <Search size={18} className="mhub-search-icon" />
                     <input
-                        className="glass-search-input"
-                        placeholder="Search for mentors, experts by name or skill..."
+                        placeholder="Search contributors, mentors..."
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                     />
                 </div>
-
-                <div className="filter-scroll-row">
+                <div className="mhub-pills">
                     {['All', 'Mentor', 'Professor', 'Senior', 'Student'].map(c => (
                         <button
                             key={c}
-                            className={`filter-glass-pill ${category === c ? 'active' : ''}`}
+                            className={`mhub-pill ${category === c ? 'active' : ''}`}
                             onClick={() => setCategory(c)}
                         >
                             {c}
@@ -124,47 +84,37 @@ export default function Explore() {
                 </div>
             </div>
 
-            {/* Grid Area */}
-            <div className="explore-grid">
+            {/* Cards Grid */}
+            <div className="mhub-grid">
                 {filtered.map(u => (
-                    <div key={u.id} className="explore-card-glass">
-                        {/* Banner & Avatar overlap */}
-                        <div className="card-top-section">
-                            <img src={u.banner} alt="banner" className="card-banner-img" />
-                            <div className="close-btn-glass"><X size={16} /></div>
-                            <div className="card-avatar-overlap">{u.avatar}</div>
+                    <div key={u.id} className="mhub-card">
+                        {/* Three-dot menu */}
+                        <button className="mhub-card-menu">
+                            <MoreVertical size={18} />
+                        </button>
+
+                        {/* Avatar */}
+                        <div className="mhub-avatar-wrap">
+                            <img src={u.avatar} alt={u.name} className="mhub-avatar" />
                         </div>
 
-                        {/* Card Meta Info */}
-                        <div className="card-content">
-                            <div className="card-header-row">
-                                <h3 className="card-user-name">{u.name}</h3>
-                                <button
-                                    className={`follow-glass-btn ${followed[u.id] ? 'active' : ''}`}
-                                    onClick={() => setFollowed(p => ({ ...p, [u.id]: !p[u.id] }))}
-                                >
-                                    {followed[u.id] ? <><Check size={16} /> Following</> : 'Follow'}
-                                </button>
-                            </div>
+                        {/* Name & Role */}
+                        <h3 className="mhub-name">{u.name}</h3>
+                        <p className="mhub-role-mid">{u.role}</p>
 
-                            <p className="card-user-role">{u.role}</p>
-                            <p className="card-user-headline">{u.headline}</p>
+                        {/* Social Links */}
+                        <div className="mhub-socials">
+                            <a href="#" className="mhub-social-icon"><Github size={20} /></a>
+                            <a href="#" className="mhub-social-icon"><Linkedin size={20} /></a>
+                        </div>
 
-                            {/* Mutual Connections / Social Proof */}
-                            <div className="social-proof-row">
-                                <div className="mutual-avatars">
-                                    <div className="m-avatar" style={{ zIndex: 3 }}>👤</div>
-                                    <div className="m-avatar" style={{ zIndex: 2, marginLeft: -10 }}>👤</div>
-                                </div>
-                                <span className="social-proof-text">
-                                    {u.followedBy[0]}, {u.followedBy[1]} and {u.mutual} others you know followed
-                                </span>
-                            </div>
+                        {/* Divider */}
+                        <div className="mhub-card-divider" />
 
-                            <div className="card-actions-row">
-                                <button className="glass-action-btn"><MessageSquare size={16} /> Message</button>
-                                <button className="glass-action-btn"><Repeat size={16} /> Exchange</button>
-                            </div>
+                        {/* Action Buttons */}
+                        <div className="mhub-actions">
+                            <button className="mhub-btn-connect">Connect</button>
+                            <button className="mhub-btn-exchange">Exchange</button>
                         </div>
                     </div>
                 ))}
