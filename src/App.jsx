@@ -5,6 +5,7 @@ import Profile from './pages/Profile';
 import Rooms from './pages/Rooms';
 import Materials from './pages/Materials';
 import Explore from './pages/Explore';
+import Labs from './pages/Labs';
 import Messages from './pages/Messages';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -29,11 +30,13 @@ function App() {
 
   const renderPage = () => {
     switch (tab) {
-      case 'home': return <Home />;
+      case 'home': return <Home onNavigate={setTab} />;
       case 'profile': return <Profile />;
-      case 'rooms': return <Rooms />;
+      case 'rooms':
+      case 'my-rooms': return <Rooms currentTab={tab} />;
       case 'materials': return <Materials />;
       case 'explore': return <Explore />;
+      case 'labs': return <Labs />;
       case 'messages': return <Messages />;
       case 'notifications':
         return (

@@ -12,13 +12,52 @@
     flex-direction: column;
     min-width: 0;
     overflow: hidden;
-    padding: 0 24px 0 12px;
+}
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 24px 32px 0 32px;
+    flex-shrink: 0;
+}
+
+.top-bar-icon {
+    width: 42px;
+    height: 42px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B7280;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid #F3F4F6;
+    transition: all 0.18s ease;
+}
+
+.top-bar-icon:hover {
+    border-color: #E5E7EB;
+    color: #111827;
+}
+
+.notif-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: #FF2D55;
+    border-radius: 50%;
+    border: 2px solid #F8F9FD;
 }
 
 .scroll-viewport {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 40px;
+    padding: 24px 32px 40px 32px;
 }
 
 .is-messages .main-container {
@@ -26,7 +65,7 @@
 }
 
 .is-messages .scroll-viewport {
-    padding-bottom: 0;
+    padding: 0;
 }
 
 .full-screen-main {
@@ -34,9 +73,14 @@
     height: 100vh;
 }
 
-/* Custom scrollbar for dark theme */
+.content-grid {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
 .scroll-viewport::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 
 .scroll-viewport::-webkit-scrollbar-track {
@@ -44,23 +88,6 @@
 }
 
 .scroll-viewport::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: #E5E7EB;
     border-radius: 10px;
-}
-
-.scroll-viewport::-webkit-scrollbar-thumb:hover {
-    background: var(--text-3);
-}
-
-.content-grid {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px 0;
-}
-
-@media (max-width: 1024px) {
-    .gemink-root {
-        /* On smaller screens, the layout might need adjustment */
-    }
 }

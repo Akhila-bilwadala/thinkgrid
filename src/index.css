@@ -1,27 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 
 :root {
-  --bg: #0D0D0D;
-  --card: #191919;
-  --card-hover: #222222;
-  --border: #2A2A2A;
-  --accent: #FF3E6C;
-  --accent-soft: rgba(255, 62, 108, 0.15);
-  --green: #4ADE80;
-  --green-soft: rgba(74, 222, 128, 0.15);
-  --gold: #FACC15;
-  --gold-soft: rgba(250, 204, 21, 0.15);
-  --text-1: #FFFFFF;
-  --text-2: #A0A0A0;
-  --text-3: #666666;
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --radius: 20px;
-  --radius-sm: 12px;
+  --bg: #F8F9FD;
+  /* Light gray-blue background */
+  --card: #FFFFFF;
+  --card-hover: #F1F5F9;
+  --border: #F1F5F9;
+  --accent: #FF2D55;
+  /* Vibrant Pink/Red */
+  --accent-2: #FF8C00;
+  /* Warm Orange */
+  --accent-3: #7F00FF;
+  /* Electric Purple */
+  --accent-soft: rgba(255, 45, 85, 0.08);
+  --text-1: #111827;
+  /* Near black */
+  --text-2: #6B7280;
+  /* Gray for labels */
+  --text-3: #9CA3AF;
+  /* Light gray for icons/disabled */
+  --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 15px 45px rgba(255, 45, 85, 0.08);
+  --radius: 28px;
+  /* High rounding */
+  --radius-sm: 16px;
   --radius-full: 9999px;
-  --sidebar-w: 70px;
-  --rightbar-w: 64px;
-  --transition: .22s cubic-bezier(0.4, 0, 0.2, 1);
+  --sidebar-w: 240px;
+  /* Wide sidebar */
+  --transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 *,

@@ -1,47 +1,90 @@
 import React from 'react';
 import {
   LayoutGrid,
-  Video,
+  Wallet,
+  ArrowRightLeft,
+  BookOpen,
+  Zap,
+  History,
   Users,
-  Bookmark,
   Star,
   MessageCircle,
-  User
+  Settings,
+  User,
+  LogOut
 } from 'lucide-react';
 import './Sidebar.css';
 
-const NAV_ITEMS = [
-  { id: 'home', icon: <LayoutGrid size={24} />, label: 'Dashboard' },
-  { id: 'rooms', icon: <Video size={24} />, label: 'Rooms' },
-  { id: 'materials', icon: <Bookmark size={24} />, label: 'Materials' },
-  { id: 'explore', icon: <Star size={24} />, label: 'Explore' },
-  { id: 'messages', icon: <MessageCircle size={24} />, label: 'Messages' },
-  { id: 'profile', icon: <User size={24} />, label: 'Profile' },
+const MAIN_NAV = [
+  { id: 'home', icon: <LayoutGrid size={20} />, label: 'Home' },
+  { id: 'materials', icon: <Wallet size={20} />, label: 'Skill Points' },
+  { id: 'rooms', icon: <ArrowRightLeft size={20} />, label: 'Skill Exchange' },
+  { id: 'explore', icon: <BookOpen size={20} />, label: 'Materials Hub' },
+  { id: 'labs', icon: <Zap size={20} />, label: 'Active Labs' },
+  { id: 'activity', icon: <History size={20} />, label: 'Activity' },
 ];
 
-export default function Sidebar({ currentTab, onNavigate }) {
+const COMMUNITY_NAV = [
+  { id: 'my-rooms', icon: <Users size={20} />, label: 'My Rooms' },
+  { id: 'messages', icon: <MessageCircle size={20} />, label: 'Chat' },
+];
+
+export default function Sidebar({ currentTab, onNavigate, onLogout }) {
   return (
     <aside className="gemink-sidebar">
-      <div className="sidebar-top">
-        <div className="gemink-logo" onClick={() => onNavigate('home')}>
-          <div className="logo-inner">TG</div>
+      <div className="sidebar-header">
+        <div className="brand" onClick={() => onNavigate('home')}>
+          <div className="brand-logo">
+            <div className="logo-square">
+              <div className="logo-dot" />
+            </div>
+          </div>
+          <span className="brand-name">think<span>grid</span></span>
         </div>
       </div>
 
-      <nav className="mini-nav">
-        {NAV_ITEMS.map(item => (
-          <button
-            key={item.id}
-            className={`mini-nav-btn ${currentTab === item.id ? 'active' : ''}`}
-            onClick={() => onNavigate(item.id)}
-            title={item.label}
-          >
-            {item.icon}
-            {currentTab === item.id && <div className="nav-indicator" />}
-          </button>
-        ))}
-      </nav>
+      <div className="sidebar-sections">
+        <nav className="nav-group">
+          {MAIN_NAV.map(item => (
+            <button
+              key={item.id}
+              className={`nav-item ${currentTab === item.id ? 'active' : ''}`}
+              onClick={() => onNavigate(item.id)}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+              {currentTab === item.id && <div className="active-arrow">›</div>}
+            </button>
+          ))}
+        </nav>
 
+        <div className="nav-divider" />
+
+        <nav className="nav-group">
+          <h4 className="group-title">Community</h4>
+          {COMMUNITY_NAV.map(item => (
+            <button
+              key={item.id}
+              className={`nav-item ${currentTab === item.id ? 'active' : ''}`}
+              onClick={() => onNavigate(item.id)}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div className="sidebar-footer">
+        <button className="nav-item profile-trigger" onClick={() => onNavigate('profile')}>
+          <span className="nav-icon"><User size={20} /></span>
+          <span className="nav-label">Profile</span>
+        </button>
+        <button className="nav-item logout-btn" onClick={onLogout}>
+          <span className="nav-icon"><LogOut size={20} /></span>
+          <span className="nav-label">Logout</span>
+        </button>
+      </div>
     </aside>
   );
 }
