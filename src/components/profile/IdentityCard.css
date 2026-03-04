@@ -1,0 +1,222 @@
+.id-card-v2 {
+    position: relative;
+    padding: 24px;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: var(--shadow-lg);
+}
+
+.id-card-glow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: var(--accent-blue);
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.id-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.user-profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.id-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: var(--radius-md);
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.id-user-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.id-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.id-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.id-label-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    background: var(--bg-accent);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
+.id-inst-tag {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.id-score-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-tertiary);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid var(--border-dim);
+}
+
+.icon-gold {
+    color: #fbbf24;
+}
+
+.icon-blue {
+    color: var(--accent-blue);
+}
+
+.icon-purple {
+    color: var(--accent-purple);
+}
+
+.id-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.id-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.id-skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+}
+
+.id-skill-item {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-dim);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.skill-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.skill-level {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.skill-level.advanced {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.skill-level.intermediate {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.skill-level.beginner {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.id-goals-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.id-goal-tag {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-dim);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+}
+
+.id-progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.level-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.xp-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--accent-gradient);
+    box-shadow: 0 0 10px var(--accent-glow);
+    border-radius: var(--radius-full);
+}

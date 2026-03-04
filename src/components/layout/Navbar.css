@@ -1,0 +1,154 @@
+.gemink-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0;
+    gap: 20px;
+    background: transparent;
+    z-index: 50;
+}
+
+/* Search Pill */
+.search-group {
+    flex: 1;
+    max-width: 500px;
+}
+
+.search-pill {
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px 6px 6px 18px;
+    gap: 12px;
+    transition: var(--transition);
+}
+
+.search-pill:focus-within {
+    border-color: var(--text-3);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+}
+
+.search-icon {
+    color: var(--text-3);
+}
+
+.search-pill input {
+    flex: 1;
+    font-size: 0.95rem;
+    color: var(--text-1);
+    background: transparent;
+}
+
+.search-pill input::placeholder {
+    color: var(--text-3);
+}
+
+.search-submit {
+    background: #252525;
+    color: var(--text-1);
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.search-submit:hover {
+    background: #333;
+}
+
+/* Action Bar */
+.action-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.top-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon-circ {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-2);
+    transition: var(--transition);
+    position: relative;
+    background: transparent;
+}
+
+.icon-circ:hover {
+    background: var(--card);
+    color: var(--text-1);
+}
+
+.notif-dot {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+}
+
+.top-user-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 14px 6px 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.top-user-pill:hover {
+    border-color: var(--text-3);
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    background: #A0A0A0;
+    /* Placeholder color, should use image in real site */
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: #000;
+}
+
+.user-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name-small {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-1);
+}
+
+.user-status-small {
+    font-size: 0.7rem;
+    color: var(--green);
+    font-weight: 500;
+}
+
+.chevron {
+    color: var(--text-3);
+    margin-left: 2px;
+}

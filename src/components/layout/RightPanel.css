@@ -1,0 +1,126 @@
+.gemink-right-panel {
+    width: var(--rightbar-w);
+    height: 100vh;
+    background: var(--bg);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.status-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    height: 100%;
+}
+
+.avatar-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.avatar-wrapper:hover {
+    transform: scale(1.1);
+}
+
+.status-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    object-fit: cover;
+    background: var(--card);
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+}
+
+.online-indicator.online {
+    background: var(--green);
+}
+
+.online-indicator.offline {
+    background: var(--text-3);
+}
+
+.btn-add-status {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    transition: var(--transition);
+}
+
+.btn-add-status:hover {
+    color: var(--text-1);
+    border-color: var(--text-3);
+}
+
+.column-divider {
+    width: 24px;
+    height: 1px;
+    background: var(--border);
+}
+
+.game-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    margin-top: auto;
+}
+
+.game-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.game-icon-box:hover {
+    background: var(--card-hover);
+    transform: translateY(-2px);
+}
+
+.game-emoji {
+    font-size: 1.2rem;
+}
+
+@media (max-width: 1280px) {
+    .gemink-right-panel {
+        /* display: none; */
+        /* Optionally hide on smaller screens */
+    }
+}

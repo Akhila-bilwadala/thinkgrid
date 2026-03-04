@@ -1,0 +1,66 @@
+.gemink-root {
+    display: flex;
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text-1);
+    overflow: hidden;
+}
+
+.main-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0 24px 0 12px;
+}
+
+.scroll-viewport {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 40px;
+}
+
+.is-messages .main-container {
+    padding: 0;
+}
+
+.is-messages .scroll-viewport {
+    padding-bottom: 0;
+}
+
+.full-screen-main {
+    width: 100%;
+    height: 100vh;
+}
+
+/* Custom scrollbar for dark theme */
+.scroll-viewport::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scroll-viewport::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-viewport::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+.scroll-viewport::-webkit-scrollbar-thumb:hover {
+    background: var(--text-3);
+}
+
+.content-grid {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 0;
+}
+
+@media (max-width: 1024px) {
+    .gemink-root {
+        /* On smaller screens, the layout might need adjustment */
+    }
+}

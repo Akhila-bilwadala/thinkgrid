@@ -1,0 +1,103 @@
+.notifications-page {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.page-header-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header-v2 h2 {
+    font-size: 2rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notifications-list {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.notification-item-v2 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-dim);
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.notification-item-v2:last-child {
+    border-bottom: none;
+}
+
+.notification-item-v2:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.notif-icon-v2 {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notif-icon-v2.swap {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-blue);
+}
+
+.notif-icon-v2.like {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.notif-icon-v2.mention {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-purple);
+}
+
+.notif-icon-v2.follow {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.notif-content-v2 {
+    flex: 1;
+}
+
+.notif-content-v2 p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.notif-user {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.notif-time {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.notif-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    box-shadow: 0 0 8px var(--accent-glow);
+}

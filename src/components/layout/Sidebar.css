@@ -1,0 +1,82 @@
+.gemink-sidebar {
+    width: var(--sidebar-w);
+    height: 100vh;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.sidebar-top {
+    margin-bottom: 32px;
+}
+
+.gemink-logo {
+    width: 44px;
+    height: 44px;
+    background: var(--card);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.gemink-logo:hover {
+    transform: scale(1.05);
+}
+
+.logo-inner {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--text-1);
+    letter-spacing: -1px;
+}
+
+.mini-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.mini-nav-btn {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    border-radius: 14px;
+    position: relative;
+    transition: var(--transition);
+}
+
+.mini-nav-btn:hover {
+    color: var(--text-1);
+    background: var(--card);
+}
+
+.mini-nav-btn.active {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.nav-indicator {
+    position: absolute;
+    left: -12px;
+    width: 4px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 0 4px 4px 0;
+}
+
+/* mini-nav styles... */

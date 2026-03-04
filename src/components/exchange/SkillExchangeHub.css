@@ -1,0 +1,201 @@
+.exchange-hub-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.hub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.hub-title-section h2 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.hub-title-section p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.hub-stats {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-radius: var(--radius-xl);
+}
+
+.stat-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--border-medium);
+    margin: 0 24px;
+}
+
+.hub-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: -16px;
+    background: var(--bg-primary);
+    padding: 16px 0;
+    z-index: 10;
+}
+
+.hub-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-tertiary);
+    padding: 4px;
+    border-radius: var(--radius-md);
+}
+
+.hub-tab {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.hub-tab.active {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.hub-tab .badge {
+    background: var(--accent-blue);
+    color: white;
+    font-size: 0.7rem;
+    padding: 0 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.search-box-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+}
+
+.search-box-mini input {
+    font-size: 0.85rem;
+    width: 200px;
+}
+
+.hub-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.section-intro {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.intro-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: var(--bg-accent);
+    color: var(--accent-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-intro h3 {
+    font-size: 1.25rem;
+}
+
+.exchange-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.discovery-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.skill-tile {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    cursor: pointer;
+}
+
+.skill-tile:hover {
+    border-color: var(--accent-purple);
+}
+
+.tile-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tile-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.tile-arrow {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--text-dim);
+}
+
+@media (max-width: 768px) {
+    .hub-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hub-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-box-mini input {
+        width: 100%;
+    }
+}
