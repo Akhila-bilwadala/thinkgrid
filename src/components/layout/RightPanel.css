@@ -43,8 +43,9 @@
     width: 100%;
     height: 100%;
     border-radius: 12px;
-    object-fit: cover;
-    background: var(--card);
+    object-fit: contain;
+    background: #FFFFFF;
+    padding: 6px;
 }
 
 .online-indicator {

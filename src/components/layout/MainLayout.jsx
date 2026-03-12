@@ -9,7 +9,7 @@ export default function MainLayout({ children, current, onNavigate, user, onLogo
             <Sidebar currentTab={current} onNavigate={onNavigate} onLogout={onLogout} />
 
             <div className="main-container">
-                {current !== 'messages' && (
+                {current !== 'messages' && current !== 'room-detail' && (
                     <div className="top-bar">
                         <div className="top-bar-icon" onClick={() => onNavigate('notifications')}>
                             <Bell size={18} />

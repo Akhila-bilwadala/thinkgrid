@@ -17,17 +17,14 @@ import './Sidebar.css';
 
 const MAIN_NAV = [
   { id: 'home', icon: <LayoutGrid size={20} />, label: 'Home' },
-  { id: 'materials', icon: <Wallet size={20} />, label: 'Skill Points' },
-  { id: 'rooms', icon: <ArrowRightLeft size={20} />, label: 'Skill Exchange' },
-  { id: 'explore', icon: <BookOpen size={20} />, label: 'Materials Hub' },
+  { id: 'materials', icon: <BookOpen size={20} />, label: 'Materials' },
+  { id: 'rooms', icon: <MessageCircle size={20} />, label: 'Discussions Room' },
+  { id: 'explore', icon: <Users size={20} />, label: 'Connect' },
   { id: 'labs', icon: <Zap size={20} />, label: 'Active Labs' },
   { id: 'activity', icon: <History size={20} />, label: 'Activity' },
 ];
 
-const COMMUNITY_NAV = [
-  { id: 'my-rooms', icon: <Users size={20} />, label: 'My Rooms' },
-  { id: 'messages', icon: <MessageCircle size={20} />, label: 'Chat' },
-];
+
 
 export default function Sidebar({ currentTab, onNavigate, onLogout }) {
   return (
@@ -58,21 +55,7 @@ export default function Sidebar({ currentTab, onNavigate, onLogout }) {
           ))}
         </nav>
 
-        <div className="nav-divider" />
 
-        <nav className="nav-group">
-          <h4 className="group-title">Community</h4>
-          {COMMUNITY_NAV.map(item => (
-            <button
-              key={item.id}
-              className={`nav-item ${currentTab === item.id ? 'active' : ''}`}
-              onClick={() => onNavigate(item.id)}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-            </button>
-          ))}
-        </nav>
       </div>
 
       <div className="sidebar-footer">

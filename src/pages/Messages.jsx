@@ -1,25 +1,37 @@
 import React, { useState } from 'react';
-import { Search, Phone, Video, Info, Send, Plus, ArrowLeft, UserPlus } from 'lucide-react';
+import { 
+    Search, Phone, Video, Info, Send, Plus, 
+    ArrowLeft, MoreVertical, Paperclip, Smile,
+    Files, Image as ImageIcon, Link as LinkIcon,
+    Settings, LogOut, ShieldAlert
+} from 'lucide-react';
 import './Messages.css';
 
 const CONVOS = [
-    { id: 1, name: 'Alice Smith', avatar: '👩‍💼', preview: 'Sounds good! See you then.', time: '10:42 AM', unread: 2, active: true },
-    { id: 2, name: 'Bob Johnson', avatar: '👨‍💻', preview: 'Can you review my PR when you have a sec?', time: 'Yesterday', unread: 0, active: false },
-    { id: 3, name: 'Design Team', avatar: '🎨', preview: 'New mockups are ready for review.', time: 'Tuesday', unread: 5, active: false },
-    { id: 4, name: 'Project Alpha', avatar: '🚀', preview: 'Deployment successful!', time: 'Monday', unread: 0, active: false },
-];
-
-const MSGS = [
-    { id: 1, from: 'them', text: 'Hey there! How is the new feature coming along?', time: '09:15 AM' },
-    { id: 2, from: 'me', text: 'It\'s going well! I just finished the backend integration.', time: '09:45 AM' },
-    { id: 3, from: 'them', text: 'Awesome. We need to deploy it by Friday.', time: '10:00 AM' },
-    { id: 4, from: 'me', text: 'No problem. I should have a PR up for review this afternoon.', time: '10:30 AM' },
-    { id: 5, from: 'them', text: 'Sounds good! See you then.', time: '10:42 AM' },
+    { 
+        id: 1, name: 'Alice Smith', avatar: '/default-avatar.png', 
+        preview: 'Senior Project Manager @TechFlow', unread: 2, online: true,
+        role: 'Senior Project Manager', company: 'TechFlow'
+    },
+    { 
+        id: 2, name: 'Bob Johnson', avatar: '/default-avatar.png', 
+        preview: 'Fullstack Developer @Orbit Tech', unread: 0, online: false,
+        role: 'Fullstack Developer', company: 'Orbit Tech'
+    },
+    { 
+        id: 3, name: 'Dr. Sarah Venn', avatar: '/default-avatar.png', 
+        preview: 'SQL Specialist @EduGrid', unread: 5, online: true,
+        role: 'SQL Specialist', company: 'EduGrid'
+    },
+    { 
+        id: 4, name: 'James Wilson', avatar: '/default-avatar.png', 
+        preview: 'Cloud Architect @DevOps Inc', unread: 0, online: true,
+        role: 'Cloud Architect', company: 'DevOps Inc'
+    },
 ];
 
 export default function Messages() {
     const [active, setActive] = useState(1);
-    const [input, setInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
     const activeConvo = CONVOS.find(c => c.id === active);
@@ -29,38 +41,40 @@ export default function Messages() {
     );
 
     return (
-        <div className="chat-layout">
-            {/* Sidebar (Conversations List) */}
-            <div className="chat-sidebar">
-                <div className="chat-sidebar-header">
-                    <h2>Messages</h2>
-                    <div className="chat-search">
-                        <Search size={16} />
+        <div className="elite-chat-layout animate-up">
+            
+            {/* 1. Sidebar: Connection List */}
+            <div className="chat-left-sidebar">
+                <div className="chat-sidebar-head">
+                    <h2>Connections</h2>
+                    <div className="chat-search-premium">
+                        <Search size={14} />
                         <input
                             type="text"
-                            placeholder="Search messages..."
+                            placeholder="Find a talk..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                 </div>
 
-                <div className="chat-list">
+                <div className="chat-scroll-list">
                     {filteredConvos.map(c => (
                         <div
                             key={c.id}
-                            className={`chat-item ${active === c.id ? 'active' : ''}`}
+                            className={`chat-convo-item ${active === c.id ? 'active' : ''}`}
                             onClick={() => setActive(c.id)}
                         >
-                            <div className="chat-item-avatar">{c.avatar}</div>
-                            <div className="chat-item-info">
-                                <div className="chat-item-top">
-                                    <span className="chat-item-name">{c.name}</span>
-                                    <span className="chat-item-time">{c.time}</span>
+                            <div className="convo-avatar-ring">
+                                <img src={c.avatar} alt={c.name} />
+                                {c.online && <span className="online-dot" />}
+                            </div>
+                            <div className="convo-summary">
+                                <div className="convo-top">
+                                    <span className="convo-name">{c.name}</span>
                                 </div>
-                                <div className="chat-item-bottom">
-                                    <span className="chat-item-preview">{c.preview}</span>
-                                    {c.unread > 0 && <span className="chat-item-unread">{c.unread}</span>}
+                                <div className="convo-preview-row">
+                                    <span className="convo-preview">{c.preview}</span>
                                 </div>
                             </div>
                         </div>
@@ -68,60 +82,63 @@ export default function Messages() {
                 </div>
             </div>
 
-            {/* Main Chat Area */}
-            <div className="chat-main">
+            {/* 2. Main Detail Area (Replacing Chat Area) */}
+            <div className="chat-directory-view">
                 {activeConvo ? (
-                    <>
-                        {/* Chat Header */}
-                        <div className="chat-header">
-                            <div className="chat-header-info">
-                                <div className="chat-header-avatar">{activeConvo.avatar}</div>
-                                <div>
-                                    <h3 className="chat-header-name">{activeConvo.name}</h3>
-                                    <span className="chat-header-status">Online</span>
+                    <div className="directory-content animate-slide-in">
+                        <div className="directory-header">
+                            <div className="header-visual">
+                                <img src={activeConvo.avatar} alt={activeConvo.name} className="large-avatar" />
+                                <div className="header-text">
+                                    <h3>{activeConvo.name}</h3>
+                                    <p>{activeConvo.role}</p>
+                                    <span className="details-company">@{activeConvo.company}</span>
                                 </div>
                             </div>
-                            <div className="chat-header-actions">
-                                <button className="chat-icon-btn"><Phone size={18} /></button>
-                                <button className="chat-icon-btn"><Video size={18} /></button>
-                                <button className="chat-icon-btn"><Info size={18} /></button>
+                            <div className="header-actions">
+                                <button className="glass-icon-btn"><Phone size={18} /></button>
+                                <button className="glass-icon-btn"><Video size={18} /></button>
+                                <button className="elite-primary-btn">Collaborate</button>
                             </div>
                         </div>
 
-                        {/* Messages Container */}
-                        <div className="chat-messages">
-                            {MSGS.map(msg => (
-                                <div key={msg.id} className={`chat-bubble-wrapper ${msg.from}`}>
-                                    <div className="chat-bubble">
-                                        <p>{msg.text}</p>
-                                        <span className="chat-bubble-time">{msg.time}</span>
+                        <div className="directory-body">
+                            <div className="directory-section">
+                                <h4>Shared Materials</h4>
+                                <div className="asset-grid">
+                                    <div className="asset-card">
+                                        <div className="asset-icon"><Files size={20} /></div>
+                                        <span>Project_Specs.pdf</span>
+                                        <p>1.2 MB • PDF File</p>
+                                    </div>
+                                    <div className="asset-card">
+                                        <div className="asset-icon pink"><ImageIcon size={20} /></div>
+                                        <span>Landing_Draft.png</span>
+                                        <p>4.5 MB • Image</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-
-                        {/* Input Area */}
-                        <div className="chat-input-area">
-                            <button className="chat-attach-btn"><Plus size={20} /></button>
-                            <div className="chat-input-wrapper">
-                                <input
-                                    type="text"
-                                    placeholder="Type a message..."
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && setInput('')}
-                                />
                             </div>
-                            <button className="chat-send-btn" onClick={() => setInput('')}>
-                                <Send size={18} />
-                            </button>
+
+                            <div className="directory-section">
+                                <h4>Quick Links</h4>
+                                <div className="links-list">
+                                    <button className="link-item"><Settings size={16} /> Connection Settings</button>
+                                    <button className="link-item danger"><LogOut size={16} /> Remove Connection</button>
+                                </div>
+                            </div>
                         </div>
-                    </>
+                        
+                        <div className="directory-footer">
+                            <p>Messaging for this connection will be enabled soon.</p>
+                        </div>
+                    </div>
                 ) : (
-                    <div className="chat-empty-state">
-                        <MessageCircle size={48} />
-                        <h3>Your Messages</h3>
-                        <p>Select a conversation to start chatting</p>
+                    <div className="chat-placeholder-view">
+                        <div className="placeholder-icon-wrap">
+                            <Plus size={40} />
+                        </div>
+                        <h2>Your Connection Directory</h2>
+                        <p>Select a peer to view details and shared materials</p>
                     </div>
                 )}
             </div>

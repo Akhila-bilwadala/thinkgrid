@@ -6,38 +6,38 @@ import Rooms from './pages/Rooms';
 import Materials from './pages/Materials';
 import Explore from './pages/Explore';
 import Labs from './pages/Labs';
-import Messages from './pages/Messages';
+import Activity from './pages/Activity';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import RoomDetail from './pages/RoomDetail';
 import Footer from './components/layout/Footer';
 import './pages/pages.css';
 
+import { useAuth } from './context/AuthContext';
+
 function App() {
   const [tab, setTab] = useState('home');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authView, setAuthView] = useState('login'); // 'login' or 'register'
-  const [user, setUser] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const { user, loading, logout } = useAuth();
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
+  const navigateToRoom = (room) => {
+    setSelectedRoom(room);
+    setTab('room-detail');
   };
 
   const renderPage = () => {
+    if (tab === 'room-detail' && selectedRoom) {
+      return <RoomDetail room={selectedRoom} onBack={() => { setTab('rooms'); setSelectedRoom(null); }} />;
+    }
     switch (tab) {
       case 'home': return <Home onNavigate={setTab} />;
       case 'profile': return <Profile />;
-      case 'rooms':
-      case 'my-rooms': return <Rooms currentTab={tab} />;
+      case 'rooms': return <Rooms currentTab={tab} onEnterRoom={navigateToRoom} />;
       case 'materials': return <Materials />;
       case 'explore': return <Explore />;
       case 'labs': return <Labs />;
-      case 'messages': return <Messages />;
+      case 'activity': return <Activity onEnterRoom={navigateToRoom} />;
       case 'notifications':
         return (
           <div className="card animate-up" style={{ padding: '40px', textAlign: 'center' }}>
@@ -57,14 +57,22 @@ function App() {
     }
   };
 
-  if (!isAuthenticated) {
+  if (loading) {
+    return (
+      <div className="loading-screen" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B0F1A', color: 'white' }}>
+        <div className="loader">ThinkGrid...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return authView === 'login'
-      ? <Login onLogin={handleLogin} onSwitch={() => setAuthView('register')} />
-      : <Register onRegister={handleLogin} onSwitch={() => setAuthView('login')} />;
+      ? <Login onSwitch={() => setAuthView('register')} />
+      : <Register onSwitch={() => setAuthView('login')} />;
   }
 
   return (
-    <MainLayout current={tab} onNavigate={setTab} user={user} onLogout={handleLogout}>
+    <MainLayout current={tab} onNavigate={setTab} user={user} onLogout={logout}>
       <div className="app-content-wrapper">
         {renderPage()}
         {tab === 'home' && <Footer />}

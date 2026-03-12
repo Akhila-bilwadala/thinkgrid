@@ -135,12 +135,17 @@
     overflow: hidden;
     margin-bottom: 14px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFF;
+    padding: 10px;
 }
 
 .mhub-avatar {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 
@@ -246,6 +251,67 @@
     background: #F9FAFB;
 }
 
+.mhub-self-tag {
+    margin-top: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6366f1;
+    background: #eef2ff;
+    padding: 6px 16px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Success Toast ── */
+.elite-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    background: #111827;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toast-icon {
+    width: 24px;
+    height: 24px;
+    background: #10B981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.toast-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.toast-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.toast-msg {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
     .mhub-grid {
@@ -256,5 +322,177 @@
 @media (max-width: 700px) {
     .mhub-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ── Skill Exchange Modal ── */
+.ex-modal {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 520px;
+    border-radius: 24px;
+    box-shadow: 0 40px 100px rgba(15, 23, 42, 0.2);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.ex-modal-head {
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.ex-user-info {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.ex-mini-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.ex-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0;
+}
+
+.ex-subtitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94A3B8;
+    margin: 2px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.ex-modal-body {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.ex-input-row {
+    display: flex;
+    gap: 20px;
+}
+
+.ex-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ex-input-group label {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #64748B;
+}
+
+.ex-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #F8FAFC;
+    border: 1.5px solid #F1F5F9;
+    border-radius: 16px;
+    padding: 14px 20px;
+    transition: all 0.2s;
+}
+
+.ex-input-wrapper:focus-within {
+    border-color: #6366F1;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.05);
+}
+
+.ex-zap-icon {
+    color: #F97316;
+}
+
+.ex-input-wrapper input {
+    width: 100%;
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0F172A;
+    font-family: inherit;
+}
+
+.ex-input-wrapper input::placeholder {
+    color: #94A3B8;
+    font-weight: 500;
+}
+
+.ex-pricing-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #F1F5F9;
+    padding-top: 20px;
+}
+
+.ex-price-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: #64748B;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ex-price-item strong {
+    color: #0F172A;
+    font-weight: 800;
+}
+
+.ex-price-item.total {
+    font-size: 1rem;
+}
+
+.ex-submit-btn {
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(135deg, #FF6B00 0%, #FF2E4D 100%);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 12px 24px rgba(255, 46, 77, 0.25);
+    font-family: inherit;
+}
+
+.ex-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(255, 46, 77, 0.35);
+    opacity: 0.95;
+}
+
+.ex-submit-btn:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+    .ex-input-row {
+        flex-direction: column;
     }
 }

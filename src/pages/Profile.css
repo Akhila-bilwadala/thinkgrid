@@ -2,6 +2,10 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 24px 0;
+    --green: #10B981;
+    --green-soft: rgba(16, 185, 129, 0.1);
+    --gold: #F59E0B;
+    --gold-soft: rgba(245, 158, 11, 0.1);
 }
 
 .profile-layout-grid {
@@ -167,6 +171,7 @@
     border-radius: 12px;
     font-weight: 700;
     transition: var(--transition);
+    cursor: pointer;
 }
 
 .btn-edit-secondary:hover {
@@ -309,6 +314,8 @@
     color: var(--text-2);
     transition: var(--transition);
     cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
 .skill-pill-item:hover {
@@ -405,6 +412,231 @@
     line-height: 1.6;
 }
 
+/* Editing UI */
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-header-row .section-title {
+    margin-bottom: 0;
+}
+
+.btn-add-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-add-item:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn-remove-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #FFEDED;
+    color: #FF4D4D;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 12px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-remove-item:hover {
+    background: #FF4D4D;
+    color: #fff;
+}
+
+.btn-save-profile {
+    background: var(--green);
+    color: #fff;
+    padding: 12px 32px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.btn-save-profile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.profile-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-row-full {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+}
+
+.edit-input-bold {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-1);
+    flex: 1;
+    outline: none;
+}
+
+.edit-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-1);
+    font-size: 0.85rem;
+    font-weight: 600;
+    outline: none;
+}
+
+.edit-input-small {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-3);
+    width: 100px;
+    outline: none;
+}
+
+.edit-input-role {
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-2);
+    width: 100%;
+    margin-bottom: 8px;
+    outline: none;
+}
+
+.edit-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text-3);
+    font-size: 0.9rem;
+    font-family: inherit;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+}
+
+.edit-ach-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.edit-input-ach {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-1);
+    font-size: 0.9rem;
+    font-weight: 600;
+    outline: none;
+}
+
+.btn-icon-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #FF4D4D;
+    transition: var(--transition);
+    padding: 4px;
+}
+
+.btn-icon-remove:hover {
+    transform: scale(1.2);
+}
+
+.add-skill-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.add-skill-input {
+    flex: 1;
+    padding: 10px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--text-1);
+    outline: none;
+}
+
+.btn-icon-add {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 12px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-icon-add:hover {
+    transform: scale(1.05);
+}
+
+.remove-skill-icon {
+    margin-left: 8px;
+    opacity: 0.6;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.remove-skill-icon:hover {
+    opacity: 1;
+    color: #FF4D4D;
+    transform: scale(1.2);
+}
 
 @media (max-width: 1024px) {
     .profile-layout-grid {

@@ -1,66 +1,74 @@
-import React, { useState } from 'react';
-import { Search, MoreVertical, Github, Linkedin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, MoreVertical, Github, Linkedin, Award, Star, Zap, Send, X } from 'lucide-react';
 import './Explore.css';
-
-const CONTRIBUTORS = [
-    {
-        id: 1, name: 'Dr. Sarah Venn', email: 'sarah.venn@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=1', progress: 100,
-        role: 'SQL & DBMS Specialist', category: 'Professor'
-    },
-    {
-        id: 2, name: 'Ravi Kumar', email: 'ravi.k@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=3', progress: 82,
-        role: 'Python Mentor', category: 'Mentor'
-    },
-    {
-        id: 3, name: 'Sneha Reddy', email: 'sneha.r@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=5', progress: 66,
-        role: 'ML Researcher', category: 'Senior'
-    },
-    {
-        id: 4, name: 'Arjun Singh', email: 'arjun.s@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=8', progress: 45,
-        role: 'Backend Engineer', category: 'Student'
-    },
-    {
-        id: 5, name: "Kevin D'Souza", email: 'kevin.d@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=11', progress: 91,
-        role: 'DSA Mentor', category: 'Mentor'
-    },
-    {
-        id: 6, name: 'Priya Sharma', email: 'priya.s@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=9', progress: 58,
-        role: 'UX/UI Designer', category: 'Senior'
-    },
-    {
-        id: 7, name: 'James Wilson', email: 'james.w@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=12', progress: 74,
-        role: 'OS Specialist', category: 'Professor'
-    },
-    {
-        id: 8, name: 'Ananya Iyer', email: 'ananya.i@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=20', progress: 37,
-        role: 'Cloud Architect', category: 'Student'
-    },
-    {
-        id: 9, name: 'Deepak Nair', email: 'deepak.n@thinkgrid.com',
-        avatar: 'https://i.pravatar.cc/120?img=15', progress: 100,
-        role: 'DevOps Engineer', category: 'Mentor'
-    }
-];
+import { getAllUsers } from '../api/users';
+import { useAuth } from '../context/AuthContext';
 
 export default function Explore() {
+    const { user } = useAuth();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
+    const [toast, setToast] = useState({ show: false, message: '', name: '' });
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const filtered = CONTRIBUTORS.filter(u =>
-        (category === 'All' || u.category === category) &&
-        (u.name.toLowerCase().includes(query.toLowerCase()) || u.role.toLowerCase().includes(query.toLowerCase()))
+    // Skill Exchange Modal State
+    const [showExchangeModal, setShowExchangeModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [exchangeCredits, setExchangeCredits] = useState(50);
+    const [exchangeTopic, setExchangeTopic] = useState('');
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const data = await getAllUsers();
+                setUsers(data);
+            } catch (err) {
+                console.error('Error fetching users:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    const filtered = users.filter(u =>
+        u._id !== user?._id &&
+        (category === 'All' || u.rank === category || (category === 'Mentor' && u.rank?.includes('Mentor'))) &&
+        (u.name.toLowerCase().includes(query.toLowerCase()) || u.role?.toLowerCase().includes(query.toLowerCase()))
     );
+
+    const handleConnect = (name) => {
+        setToast({ show: true, message: 'Connection request sent successfully!', name });
+        setTimeout(() => setToast({ show: false, message: '', name: '' }), 3000);
+    };
+
+    const handleExchange = (u) => {
+        setSelectedUser(u);
+        setShowExchangeModal(true);
+    };
+
+    const submitExchange = () => {
+        setToast({ show: true, message: `Exchange request for ${exchangeTopic} sent!`, name: selectedUser.name });
+        setShowExchangeModal(false);
+        setExchangeTopic('');
+        setTimeout(() => setToast({ show: false, message: '', name: '' }), 3000);
+    };
+
+    if (loading) return <div className="loading-state">Finding Elite thinkers...</div>;
 
     return (
         <div className="mhub-container">
+            {/* Success Toast */}
+            {toast.show && (
+                <div className="elite-toast animate-up">
+                    <div className="toast-icon">✓</div>
+                    <div className="toast-content">
+                        <span className="toast-name">{toast.name}</span>
+                        <span className="toast-msg">{toast.message}</span>
+                    </div>
+                </div>
+            )}
             {/* Toolbar */}
             <div className="mhub-toolbar">
                 <div className="mhub-search">
@@ -72,7 +80,7 @@ export default function Explore() {
                     />
                 </div>
                 <div className="mhub-pills">
-                    {['All', 'Mentor', 'Professor', 'Senior', 'Student'].map(c => (
+                    {['All', 'Mentor', 'Member'].map(c => (
                         <button
                             key={c}
                             className={`mhub-pill ${category === c ? 'active' : ''}`}
@@ -86,8 +94,8 @@ export default function Explore() {
 
             {/* Cards Grid */}
             <div className="mhub-grid">
-                {filtered.map(u => (
-                    <div key={u.id} className="mhub-card">
+                {filtered.length > 0 ? filtered.map(u => (
+                    <div key={u._id} className="mhub-card">
                         {/* Three-dot menu */}
                         <button className="mhub-card-menu">
                             <MoreVertical size={18} />
@@ -95,12 +103,12 @@ export default function Explore() {
 
                         {/* Avatar */}
                         <div className="mhub-avatar-wrap">
-                            <img src={u.avatar} alt={u.name} className="mhub-avatar" />
+                            <img src={u.picture || '/default-avatar.png'} alt={u.name} className="mhub-avatar" />
                         </div>
 
                         {/* Name & Role */}
                         <h3 className="mhub-name">{u.name}</h3>
-                        <p className="mhub-role-mid">{u.role}</p>
+                        <p className="mhub-role-mid">{u.role || 'Member'}</p>
 
                         {/* Social Links */}
                         <div className="mhub-socials">
@@ -113,12 +121,85 @@ export default function Explore() {
 
                         {/* Action Buttons */}
                         <div className="mhub-actions">
-                            <button className="mhub-btn-connect">Connect</button>
-                            <button className="mhub-btn-exchange">Exchange</button>
+                            <button 
+                                className="mhub-btn-connect"
+                                onClick={() => handleConnect(u.name)}
+                            >
+                                Connect
+                            </button>
+                            <button 
+                                className="mhub-btn-exchange"
+                                onClick={() => handleExchange(u)}
+                            >
+                                Exchange
+                            </button>
                         </div>
                     </div>
-                ))}
+                )) : (
+                    <div className="no-results">No thinkers found matching your search.</div>
+                )}
             </div>
+            {/* Skill Exchange Modal */}
+            {showExchangeModal && (
+                <div className="rd-overlay" onClick={() => setShowExchangeModal(false)}>
+                    <div className="ex-modal animate-up" onClick={e => e.stopPropagation()}>
+                        <div className="ex-modal-head">
+                            <div className="ex-user-info">
+                                <img src={selectedUser?.picture || '/default-avatar.png'} className="ex-mini-avatar" alt="" />
+                                <div>
+                                    <h4 className="ex-title">Exchange with {selectedUser?.name}</h4>
+                                    <p className="ex-subtitle">{selectedUser?.role}</p>
+                                </div>
+                            </div>
+                            <button className="rd-close" onClick={() => setShowExchangeModal(false)}>
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="ex-modal-body">
+                            <div className="ex-input-row">
+                                <div className="ex-input-group">
+                                    <label>Credits to Offer</label>
+                                    <div className="ex-input-wrapper">
+                                        <Zap size={16} className="ex-zap-icon" />
+                                        <input 
+                                            type="number" 
+                                            value={exchangeCredits}
+                                            onChange={e => setExchangeCredits(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="ex-input-group">
+                                    <label>Skill Topic</label>
+                                    <div className="ex-input-wrapper">
+                                        <input 
+                                            placeholder="e.g. Machine Learning" 
+                                            value={exchangeTopic}
+                                            onChange={e => setExchangeTopic(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="ex-pricing-grid">
+                                <div className="ex-price-item">
+                                    <span>Platform Fee:</span>
+                                    <strong>5 pts</strong>
+                                </div>
+                                <div className="ex-price-item total">
+                                    <span>Total:</span>
+                                    <strong>{Number(exchangeCredits) + 5} pts</strong>
+                                </div>
+                            </div>
+
+                            <button className="ex-submit-btn" onClick={submitExchange}>
+                                <Send size={18} />
+                                Send Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

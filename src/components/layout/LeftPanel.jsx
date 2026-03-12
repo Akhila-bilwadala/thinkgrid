@@ -1,11 +1,11 @@
 import React from 'react';
+import { MessageSquare, Users, Book, Search } from 'lucide-react';
 import './LeftPanel.css';
 
 const SHORTCUTS = [
-    { id: 'rooms', icon: '💬', label: 'Discussion Rooms' },
-    { id: 'exchange', icon: '🔁', label: 'Skill Exchange' },
-    { id: 'materials', icon: '📚', label: 'Study Materials' },
-    { id: 'explore', icon: '🔍', label: 'Explore' },
+    { id: 'rooms', Icon: MessageSquare, label: 'Discussions Room' },
+    { id: 'explore', Icon: Users, label: 'Connect' },
+    { id: 'materials', Icon: Book, label: 'Materials' },
 ];
 
 export default function LeftPanel({ onNavigate }) {
@@ -44,7 +44,7 @@ export default function LeftPanel({ onNavigate }) {
                 </div>
                 {SHORTCUTS.map(s => (
                     <button key={s.id} className="tg-shortcut" onClick={() => onNavigate(s.id)}>
-                        <span className="tg-shortcut-icon">{s.icon}</span>
+                        <span className="tg-shortcut-icon"><s.Icon size={18} /></span>
                         <span>{s.label}</span>
                     </button>
                 ))}

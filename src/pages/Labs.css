@@ -258,7 +258,10 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    padding: 4px;
 }
 
 .lab-host-info div {

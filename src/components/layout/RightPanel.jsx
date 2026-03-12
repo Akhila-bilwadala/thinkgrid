@@ -1,20 +1,20 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Shield, Swords, Target } from 'lucide-react';
 import './RightPanel.css';
 
 const USERS = [
-    { id: 1, avatar: 'https://i.pravatar.cc/150?u=1', status: 'online' },
-    { id: 2, avatar: 'https://i.pravatar.cc/150?u=2', status: 'online' },
-    { id: 3, avatar: 'https://i.pravatar.cc/150?u=3', status: 'offline' },
-    { id: 4, avatar: 'https://i.pravatar.cc/150?u=4', status: 'online' },
-    { id: 5, avatar: 'https://i.pravatar.cc/150?u=5', status: 'online' },
-    { id: 6, avatar: 'https://i.pravatar.cc/150?u=6', status: 'online' },
+    { id: 1, avatar: '/default-avatar.png', status: 'online' },
+    { id: 2, avatar: '/default-avatar.png', status: 'online' },
+    { id: 3, avatar: '/default-avatar.png', status: 'offline' },
+    { id: 4, avatar: '/default-avatar.png', status: 'online' },
+    { id: 5, avatar: '/default-avatar.png', status: 'online' },
+    { id: 6, avatar: '/default-avatar.png', status: 'online' },
 ];
 
 const GAMES = [
-    { id: 1, icon: '🛡️', label: 'Valorant' },
-    { id: 2, icon: '⚔️', label: 'League' },
-    { id: 3, icon: '🏹', label: 'Dota 2' },
+    { id: 1, Icon: Shield, label: 'Valorant' },
+    { id: 2, Icon: Swords, label: 'League' },
+    { id: 3, Icon: Target, label: 'Dota 2' },
 ];
 
 export default function RightPanel() {
@@ -39,7 +39,7 @@ export default function RightPanel() {
                 <div className="game-stack">
                     {GAMES.map(game => (
                         <div key={game.id} className="game-icon-box" title={game.label}>
-                            <span className="game-emoji">{game.icon}</span>
+                            <game.Icon size={18} />
                         </div>
                     ))}
                 </div>

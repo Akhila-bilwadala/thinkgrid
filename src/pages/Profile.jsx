@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CheckCircle2,
     MapPin,
@@ -8,24 +8,134 @@ import {
     Share2,
     Star,
     Award,
-    UserPlus
+    UserPlus,
+    Plus,
+    Trash2,
+    Edit2,
+    Save,
+    X
 } from 'lucide-react';
 import './Profile.css';
-
-const TOP_SKILLS = ['React Native', 'UI/UX Design', 'System Architecture', 'Node.js', 'PostgreSQL', 'Cloud Infrastructure'];
-
-const REVIEWS = [
-    { id: 1, user: 'Gleb', initial: 'GM', time: '1 month ago', text: 'Alex possesses two qualities that set them apart from other mentors: patience and deep technical clarity...' },
-    { id: 2, user: 'Victoria', initial: 'V', time: '2 months ago', text: 'Their keen eye for detail, creativity, and dedication to our project were evident from the start.' },
-    { id: 3, user: 'Anna Dmitrieva', initial: 'AD', time: '3 months ago', text: 'Highly recommended for anyone looking to master complex backend systems.' },
-];
-
-const EXPERIENCE = [
-    { id: 1, company: 'Orbit Tech', role: 'Senior Mentor', type: 'Remote', duration: '6 months', desc: 'Leading the backend architecture for high-traffic real-time streaming platforms.' },
-    { id: 2, company: 'SkillChain', role: 'Fullstack Dev', type: 'Hybrid', duration: '1.5 years', desc: 'Built decentralized learning protocols using Ethereum and React.' },
-];
+import { getProfile, updateProfile } from '../api/users';
+import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
+    const { user: authUser } = useAuth();
+    const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    // Profile Data State
+    const [profile, setProfile] = useState({
+        name: '',
+        bio: '',
+        skills: [],
+        experience: [],
+        achievements: [],
+        role: '',
+        company: '',
+        picture: '',
+        handle: ''
+    });
+
+    const [newSkill, setNewSkill] = useState('');
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const data = await getProfile();
+                setProfile({
+                    ...data,
+                    handle: data.email ? data.email.split('@')[0] : 'user',
+                    skills: data.skills || [],
+                    experience: data.experience || [],
+                    achievements: data.achievements || []
+                });
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            await updateProfile(profile);
+            setIsEditing(false);
+        } catch (err) {
+            console.error('Error saving profile:', err);
+            alert('Failed to save profile. Please try again.');
+        }
+    };
+
+    const toggleEdit = () => {
+        if (isEditing) {
+            handleSave();
+        } else {
+            setIsEditing(true);
+        }
+    };
+
+    // Experience Handlers
+    const addExperience = () => {
+        const newItem = {
+            id: Date.now(),
+            company: 'New Company',
+            role: 'New Role',
+            type: 'Remote',
+            duration: 'Duration',
+            desc: 'Job description goes here...'
+        };
+        setProfile({ ...profile, experience: [newItem, ...profile.experience] });
+    };
+
+    const removeExperience = (id) => {
+        setProfile({ ...profile, experience: profile.experience.filter(exp => (exp.id || exp._id) !== id) });
+    };
+
+    const updateExperience = (id, field, value) => {
+        setProfile({
+            ...profile,
+            experience: profile.experience.map(exp => (exp.id || exp._id) === id ? { ...exp, [field]: value } : exp)
+        });
+    };
+
+    // Skill Handlers
+    const addSkill = (e) => {
+        e.preventDefault();
+        if (newSkill && !profile.skills.includes(newSkill)) {
+            setProfile({ ...profile, skills: [...profile.skills, newSkill] });
+            setNewSkill('');
+        }
+    };
+
+    const removeSkill = (skillToRemove) => {
+        setProfile({ ...profile, skills: profile.skills.filter(s => s !== skillToRemove) });
+    };
+
+    // Achievement Handlers
+    const addAchievement = () => {
+        const newItem = {
+            id: Date.now(),
+            icon: 'Award',
+            text: 'New Achievement'
+        };
+        setProfile({ ...profile, achievements: [...profile.achievements, newItem] });
+    };
+
+    const removeAchievement = (id) => {
+        setProfile({ ...profile, achievements: profile.achievements.filter(a => (a.id || a._id) !== id) });
+    };
+
+    const updateAchievement = (id, text) => {
+        setProfile({
+            ...profile,
+            achievements: profile.achievements.map(a => (a.id || a._id) === id ? { ...a, text } : a)
+        });
+    };
+
+    if (loading) return <div className="loading-state">Loading Profile...</div>;
 
     return (
         <div className="profile-redesign animate-up">
@@ -46,29 +156,47 @@ export default function Profile() {
 
                         <div className="profile-header-content">
                             <div className="profile-avatar-centered">
-                                <img src="/bogdan.png" alt="Alex Smith" />
+                                <img src={profile.picture || "/bogdan.png"} alt={profile.name} />
                                 <div className="status-badge" />
                             </div>
 
                             <div className="profile-identity">
-                                <div className="profile-handle">@alex.dev</div>
+                                <div className="profile-handle">@{profile.handle}</div>
                                 <h1 className="profile-name">
-                                    Alex Smith <CheckCircle2 size={20} className="verified-icon" />
+                                    {isEditing ? (
+                                        <input 
+                                            className="edit-input-title"
+                                            value={profile.name}
+                                            onChange={e => setProfile({...profile, name: e.target.value})}
+                                        />
+                                    ) : (
+                                        <>
+                                            {profile.name} <CheckCircle2 size={20} className="verified-icon" />
+                                        </>
+                                    )}
                                 </h1>
-                                <p className="profile-headline">Senior Software Architect, 6+ years of experience</p>
+                                
+                                {isEditing ? (
+                                    <textarea 
+                                        className="edit-textarea-bio"
+                                        value={profile.bio}
+                                        onChange={e => setProfile({...profile, bio: e.target.value})}
+                                        placeholder="Add a bio..."
+                                    />
+                                ) : (
+                                    <p className="profile-headline">{profile.bio || 'Add a bio to tell others about yourself'}</p>
+                                )}
 
                                 <div className="profile-meta-row">
-                                    <span className="meta-item"><MapPin size={14} /> Yerevan, Armenia</span>
+                                    <span className="meta-item"><MapPin size={14} /> ThinkGrid HQ</span>
                                     <span className="meta-divider">|</span>
-                                    <span className="meta-item"><Calendar size={14} /> Joined March 2022</span>
+                                    <span className="meta-item"><Calendar size={14} /> Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                                 </div>
 
                                 <div className="profile-header-actions">
-                                    <button className="btn-subscribe">
-                                        <UserPlus size={18} />
-                                        <span>Collaborate</span>
+                                    <button className={isEditing ? "btn-save-profile" : "btn-edit-secondary"} onClick={toggleEdit}>
+                                        {isEditing ? <><Save size={18} /> Finish Editing</> : 'Edit profile'}
                                     </button>
-                                    <button className="btn-edit-secondary">Edit profile</button>
                                 </div>
                             </div>
                         </div>
@@ -78,18 +206,77 @@ export default function Profile() {
                     <div className="profile-sections-stack">
                         {/* Experience Section */}
                         <div className="content-section card">
-                            <h2 className="section-title">Experience</h2>
+                            <div className="section-header-row">
+                                <h2 className="section-title">Experience</h2>
+                                {isEditing && (
+                                    <button className="btn-add-item" onClick={addExperience}>
+                                        <Plus size={16} /> Add Experience
+                                    </button>
+                                )}
+                            </div>
                             <div className="experience-list">
-                                {EXPERIENCE.map(exp => (
-                                    <div key={exp.id} className="experience-item">
+                                {profile.experience.map(exp => (
+                                    <div key={exp.id || exp._id} className="experience-item">
                                         <div className="exp-dot" />
                                         <div className="exp-content">
                                             <div className="exp-header">
-                                                <h3 className="exp-company">{exp.company} <span className="exp-type">{exp.type}</span></h3>
-                                                <span className="exp-duration">{exp.duration}</span>
+                                                {isEditing ? (
+                                                    <div className="edit-row-full">
+                                                        <input 
+                                                            className="edit-input-bold"
+                                                            value={exp.company}
+                                                            onChange={e => updateExperience((exp.id || exp._id), 'company', e.target.value)}
+                                                        />
+                                                        <select 
+                                                            className="edit-select"
+                                                            value={exp.type}
+                                                            onChange={e => updateExperience((exp.id || exp._id), 'type', e.target.value)}
+                                                        >
+                                                            <option value="Remote">Remote</option>
+                                                            <option value="On-site">On-site</option>
+                                                            <option value="Hybrid">Hybrid</option>
+                                                        </select>
+                                                    </div>
+                                                ) : (
+                                                    <h3 className="exp-company">{exp.company} <span className="exp-type">{exp.type}</span></h3>
+                                                )}
+                                                
+                                                {isEditing ? (
+                                                    <input 
+                                                        className="edit-input-small"
+                                                        value={exp.duration}
+                                                        onChange={e => updateExperience((exp.id || exp._id), 'duration', e.target.value)}
+                                                    />
+                                                ) : (
+                                                    <span className="exp-duration">{exp.duration}</span>
+                                                )}
                                             </div>
-                                            <div className="exp-role">{exp.role}</div>
-                                            <p className="exp-desc">{exp.desc}</p>
+                                            
+                                            {isEditing ? (
+                                                <input 
+                                                    className="edit-input-role"
+                                                    value={exp.role}
+                                                    onChange={e => updateExperience((exp.id || exp._id), 'role', e.target.value)}
+                                                />
+                                            ) : (
+                                                <div className="exp-role">{exp.role}</div>
+                                            )}
+
+                                            {isEditing ? (
+                                                <textarea 
+                                                    className="edit-textarea"
+                                                    value={exp.desc}
+                                                    onChange={e => updateExperience((exp.id || exp._id), 'desc', e.target.value)}
+                                                />
+                                            ) : (
+                                                <p className="exp-desc">{exp.desc}</p>
+                                            )}
+
+                                            {isEditing && (
+                                                <button className="btn-remove-item" onClick={() => removeExperience((exp.id || exp._id))}>
+                                                    <Trash2 size={14} /> Remove
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -98,16 +285,34 @@ export default function Profile() {
 
                         {/* Achievements */}
                         <div className="content-section card">
-                            <h2 className="section-title">Achievements</h2>
+                            <div className="section-header-row">
+                                <h2 className="section-title">Achievements</h2>
+                                {isEditing && (
+                                    <button className="btn-add-item" onClick={addAchievement}>
+                                        <Plus size={16} /> Add Achievement
+                                    </button>
+                                )}
+                            </div>
                             <div className="achieve-grid">
-                                <div className="achieve-item">
-                                    <Award className="ach-icon" />
-                                    <span>Top 1% DBMS Mentor</span>
-                                </div>
-                                <div className="achieve-item">
-                                    <Star className="ach-icon" />
-                                    <span>500+ Skills Shared</span>
-                                </div>
+                                {profile.achievements.map(ach => (
+                                    <div key={ach.id || ach._id} className="achieve-item">
+                                        {ach.icon === 'Award' ? <Award className="ach-icon" /> : <Star className="ach-icon" />}
+                                        {isEditing ? (
+                                            <div className="edit-ach-wrap">
+                                                <input 
+                                                    className="edit-input-ach"
+                                                    value={ach.text}
+                                                    onChange={e => updateAchievement((ach.id || ach._id), e.target.value)}
+                                                />
+                                                <button className="btn-icon-remove" onClick={() => removeAchievement((ach.id || ach._id))}>
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span>{ach.text}</span>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -121,12 +326,34 @@ export default function Profile() {
                         <div className="card-head">
                             <h2 className="side-card-title">Top Skills</h2>
                         </div>
+                        
+                        {isEditing && (
+                            <form className="add-skill-form" onSubmit={addSkill}>
+                                <input 
+                                    className="add-skill-input"
+                                    placeholder="Add a skill..."
+                                    value={newSkill}
+                                    onChange={e => setNewSkill(e.target.value)}
+                                />
+                                <button type="submit" className="btn-icon-add"><Plus size={18} /></button>
+                            </form>
+                        )}
+
                         <div className="skills-pill-cloud">
-                            {TOP_SKILLS.map(skill => (
-                                <span key={skill} className="skill-pill-item">{skill}</span>
+                            {profile.skills.map(skill => (
+                                <span key={skill} className="skill-pill-item">
+                                    {skill}
+                                    {isEditing && (
+                                        <X 
+                                            size={14} 
+                                            className="remove-skill-icon" 
+                                            onClick={() => removeSkill(skill)}
+                                        />
+                                    )}
+                                </span>
                             ))}
-                            <button className="btn-view-more">Show all skills</button>
                         </div>
+                        {!isEditing && profile.skills.length > 5 && <button className="btn-view-more">Show all skills</button>}
                     </div>
 
                     {/* Reviews Card */}
@@ -136,18 +363,7 @@ export default function Profile() {
                         </div>
 
                         <div className="reviews-list">
-                            {REVIEWS.map(rev => (
-                                <div key={rev.id} className="review-item">
-                                    <div className="rev-user-row">
-                                        <div className="rev-avatar">{rev.initial}</div>
-                                        <div className="rev-user-info">
-                                            <div className="rev-name">{rev.user}</div>
-                                            <div className="rev-time">{rev.time}</div>
-                                        </div>
-                                    </div>
-                                    <p className="rev-text">{rev.text}</p>
-                                </div>
-                            ))}
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', padding: '10px' }}>No reviews yet.</p>
                         </div>
                     </div>
 
