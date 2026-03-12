@@ -19,7 +19,12 @@ const Login = ({ onSwitch }) => {
             const data = await loginApi({ email, password });
             loginUser(data);
         } catch (err) {
-            setError(err.response?.data?.error || 'Login failed. Please try again.');
+            console.error('Login error:', err);
+            if (!err.response) {
+                setError('Network error: Cannot reach the backend. Check VITE_API_URL.');
+            } else {
+                setError(err.response?.data?.error || 'Login failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
