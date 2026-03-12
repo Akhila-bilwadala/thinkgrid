@@ -194,7 +194,8 @@ export default function Materials() {
         if (!fileUrl) return;
         
         // Convert the relative path to absolute URL if needed
-        const url = fileUrl.startsWith('http') ? fileUrl : `http://localhost:5000${fileUrl}`;
+        const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+        const url = fileUrl.startsWith('http') ? fileUrl : `${baseUrl}${fileUrl}`;
         
         // Create an invisible anchor tag to trigger the browser download
         const a = document.createElement('a');
