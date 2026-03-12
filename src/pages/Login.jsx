@@ -20,8 +20,9 @@ const Login = ({ onSwitch }) => {
             loginUser(data);
         } catch (err) {
             console.error('Login error:', err);
+            const attemptedUrl = err.config?.url || 'unknown';
             if (!err.response) {
-                setError('Network error: Cannot reach the backend. Check VITE_API_URL.');
+                setError(`Network error: Cannot reach the backend. (Attempted: ${attemptedUrl})`);
             } else {
                 setError(err.response?.data?.error || 'Login failed. Please try again.');
             }
