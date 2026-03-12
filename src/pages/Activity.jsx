@@ -9,6 +9,7 @@ export default function Activity({ onEnterRoom }) {
     const { user } = useAuth();
     const [joinedRooms, setJoinedRooms] = useState([]);
     const [savedMaterials, setSavedMaterials] = useState([]);
+    const [timeline, setTimeline] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -19,10 +20,33 @@ export default function Activity({ onEnterRoom }) {
                     getMaterials()
                 ]);
                 
-                setJoinedRooms(rooms.filter(r => 
+                const userJoined = rooms.filter(r => 
                     r.members?.some(m => (m._id || m) === user._id)
-                ));
-                setSavedMaterials(materials.filter(m => m.savedBy?.some(id => (id._id || id) === user._id)));
+                );
+                const userSaved = materials.filter(m => m.savedBy?.some(id => (id._id || id) === user._id));
+                
+                setJoinedRooms(userJoined);
+                setSavedMaterials(userSaved);
+
+                // Aggregate for Timeline
+                const events = [
+                    ...userJoined.map(r => ({
+                        id: `room-${r._id}`,
+                        type: 'room',
+                        title: r.name,
+                        date: r.updatedAt || r.createdAt,
+                        msg: `Joined the ${r.category || 'Discussion'} Room`
+                    })),
+                    ...userSaved.map(m => ({
+                        id: `save-${m._id}`,
+                        type: 'save',
+                        title: m.title,
+                        date: m.updatedAt || m.createdAt,
+                        msg: `Saved to your Materials Hub`
+                    }))
+                ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                setTimeline(events);
             } catch (err) {
                 console.error('Error fetching activity:', err);
             } finally {
@@ -42,6 +66,39 @@ export default function Activity({ onEnterRoom }) {
                     <p>Track your contributions, learning progress, and community engagement.</p>
                 </div>
             </header>
+
+            {/* ── RECENT ACTIVITY TIMELINE ── */}
+            <section className="activity-section timeline-section">
+                <div className="section-header">
+                    <div className="section-title-wrap">
+                        <History className="section-icon" size={20} />
+                        <h2>Recent Activity</h2>
+                    </div>
+                </div>
+                <div className="timeline-container card">
+                    {timeline.length > 0 ? timeline.map((event, idx) => (
+                        <div key={event.id} className="timeline-item">
+                            <div className="timeline-left">
+                                <div className={`timeline-dot ${event.type}`}>
+                                    {event.type === 'room' ? <MessageSquare size={12} /> : <Star size={12} />}
+                                </div>
+                                {idx < timeline.length - 1 && <div className="timeline-line" />}
+                            </div>
+                            <div className="timeline-content">
+                                <div className="timeline-main">
+                                    <span className="timeline-msg">{event.msg}</span>
+                                    <h4 className="timeline-title">{event.title}</h4>
+                                </div>
+                                <span className="timeline-date">
+                                    {new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                </span>
+                            </div>
+                        </div>
+                    )) : (
+                        <p className="no-activity-text">No recent activity detected.</p>
+                    )}
+                </div>
+            </section>
 
             <div className="activity-grid">
                 {/* ── PROJECTS SECTION (Static for now) ── */}

@@ -123,6 +123,8 @@ export default function Materials() {
                     next.add(id);
                     return next;
                 });
+                setToastMessage('Material Saved! Check your Activity Hub.');
+                setTimeout(() => setToastMessage(''), 3000);
             }
         } catch (err) {
             console.error('Error toggling material save:', err);
