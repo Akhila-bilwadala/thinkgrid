@@ -10,6 +10,16 @@ export const updateProfile = async (profileData) => {
     return data;
 };
 
+export const uploadProfilePicture = async (base64Data) => {
+    const { data } = await client.put('/users/profile/picture', { picture: base64Data });
+    return data;
+};
+
+export const uploadBgPicture = async (base64Data) => {
+    const { data } = await client.put('/users/profile/bgpicture', { bgPicture: base64Data });
+    return data;
+};
+
 export const getAllUsers = async () => {
     const { data } = await client.get('/users');
     return data;

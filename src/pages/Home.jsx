@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Send, RefreshCw, Users, BookOpen, Zap, Star, ArrowRight, Shield, MapPin, Award, TrendingUp, MessageSquare, Briefcase, Building2 } from 'lucide-react';
 import './Home.css';
 import { useAuth } from '../context/AuthContext';
-import { getProfile, updateProfile } from '../api/users';
+import { getProfile, updateProfile, getAllUsers } from '../api/users';
+import { getMaterials } from '../api/materials';
+import { getRooms } from '../api/rooms';
+import { getLabs } from '../api/labs';
+import { calculateElitePoints, getRank, calculateGlobalRank } from '../utils/pointsCalculator';
 
 const QUICK_SHORTCUTS = [
     { id: 'explore', label: 'Connect', desc: 'Collaborate with the community', icon: <Users size={28} />, color: '#F3F4F6' },
@@ -23,25 +27,65 @@ export default function Home({ onNavigate }) {
         role: 'Software Engineer',
         skills: [],
         rank: 'Elite Member',
+        globalRank: 1,
         company: 'ThinkGrid',
-        points: 2840,
+        points: 0,
         streak: 0,
         verified: false,
-        name: ''
+        name: '',
+        contributions: 0,
+        network: 0,
+        mentorships: 0
     });
     const [tempProfile, setTempProfile] = useState({ ...profile });
 
     useEffect(() => {
         const fetchHomeData = async () => {
             try {
-                const data = await getProfile();
+                const [profileData, rooms, materials, labs] = await Promise.all([
+                    getProfile(),
+                    getRooms(),
+                    getMaterials(),
+                    getLabs()
+                ]);
+
+                const userRooms = rooms.filter(r => r.members?.some(m => (m._id || m) === authUser._id));
+                const userUploaded = materials.filter(m => m.uploadedBy === authUser._id);
+                const userLabs = labs.filter(l => l.host === authUser.name || l.members?.includes(authUser.name));
+
+                // Calculate dynamic points
+                const totalPoints = calculateElitePoints(userUploaded, userLabs, userRooms);
+                const dynamicRank = getRank(totalPoints);
+                
+                // Sync points to backend for global ranking persistence
+                // We do this immediately to ensure other users see our latest points
+                if (profileData.points !== totalPoints) {
+                    await updateProfile({ points: totalPoints });
+                }
+
+                // Calculate Global Rank
+                const allUsers = await getAllUsers();
+                const globalRankNum = calculateGlobalRank(allUsers, authUser._id);
+
                 setProfile({
-                    ...data,
-                    skill: data.skills?.[0] || 'Learning'
+                    ...profileData,
+                    points: totalPoints,
+                    rank: dynamicRank,
+                    globalRank: globalRankNum,
+                    skill: profileData.skills?.[0] || 'Learning',
+                    contributions: userUploaded.length,
+                    network: userRooms.length,
+                    mentorships: userLabs.length
                 });
                 setTempProfile({
-                    ...data,
-                    skill: data.skills?.[0] || 'Learning'
+                    ...profileData,
+                    points: totalPoints,
+                    rank: dynamicRank,
+                    globalRank: globalRankNum,
+                    skill: profileData.skills?.[0] || 'Learning',
+                    contributions: userUploaded.length,
+                    network: userRooms.length,
+                    mentorships: userLabs.length
                 });
             } catch (err) {
                 console.error('Error fetching home profile:', err);
@@ -50,7 +94,7 @@ export default function Home({ onNavigate }) {
             }
         };
         fetchHomeData();
-    }, []);
+    }, [authUser._id, authUser.name]);
 
     const handleEditProfile = () => {
         setTempProfile({ ...profile });
@@ -96,7 +140,7 @@ export default function Home({ onNavigate }) {
                     </div>
                     <div className="points-amount">{profile.points?.toLocaleString() || 0} <span className="points-unit">pts</span></div>
                     <div className="points-stats">
-                        <span className="stat-up">↗ +0 earned</span>
+                        <span className="stat-up">↗ +{profile.points?.toLocaleString() || 0} earned</span>
                         <span className="stat-down">↘ −0 spent</span>
                     </div>
                 </div>
@@ -144,7 +188,7 @@ export default function Home({ onNavigate }) {
                         <div className="info-row">
                             <Users size={14} className="info-icon" />
                             <span className="info-key">Rank</span>
-                            <span className="info-val">{profile.rank || 'Member'}</span>
+                            <span className="info-val">{profile.rank || 'Member'} <span style={{ opacity: 0.6, fontSize: '0.7rem' }}>(Rank #{profile.globalRank})</span></span>
                         </div>
                         <div className="info-row">
                             <Building2 size={14} className="info-icon" />
@@ -207,15 +251,15 @@ export default function Home({ onNavigate }) {
                             </div>
                             <div className="mc-chips">
                                 <div className="mc-stat-item">
-                                    <span className="mc-stat-val">0</span>
+                                    <span className="mc-stat-val">{profile.contributions || 0}</span>
                                     <span className="mc-stat-label">Contributions</span>
                                 </div>
                                 <div className="mc-stat-item">
-                                    <span className="mc-stat-val">{profile.following || 0}</span>
+                                    <span className="mc-stat-val">{profile.network || 0}</span>
                                     <span className="mc-stat-label">Network</span>
                                 </div>
                                 <div className="mc-stat-item">
-                                    <span className="mc-stat-val">0</span>
+                                    <span className="mc-stat-val">{profile.mentorships || 0}</span>
                                     <span className="mc-stat-label">Mentorships</span>
                                 </div>
                             </div>

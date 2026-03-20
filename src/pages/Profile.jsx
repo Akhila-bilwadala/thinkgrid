@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     CheckCircle2,
     MapPin,
@@ -13,15 +13,18 @@ import {
     Trash2,
     Edit2,
     Save,
-    X
+    X,
+    Camera
 } from 'lucide-react';
 import './Profile.css';
-import { getProfile, updateProfile } from '../api/users';
+import { getProfile, updateProfile, uploadProfilePicture, uploadBgPicture } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
     const { user: authUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const profilePicInputRef = useRef(null);
+    const bgPicInputRef = useRef(null);
     const [loading, setLoading] = useState(true);
 
     // Profile Data State
@@ -34,7 +37,9 @@ export default function Profile() {
         role: '',
         company: '',
         picture: '',
-        handle: ''
+        bgPicture: '',
+        handle: '',
+        portfolioUrl: ''
     });
 
     const [newSkill, setNewSkill] = useState('');
@@ -48,7 +53,9 @@ export default function Profile() {
                     handle: data.email ? data.email.split('@')[0] : 'user',
                     skills: data.skills || [],
                     experience: data.experience || [],
-                    achievements: data.achievements || []
+                    achievements: data.achievements || [],
+                    portfolioUrl: data.portfolioUrl || '',
+                    bgPicture: data.bgPicture || ''
                 });
             } catch (err) {
                 console.error('Error fetching profile:', err);
@@ -75,6 +82,38 @@ export default function Profile() {
         } else {
             setIsEditing(true);
         }
+    };
+
+    const handleProfilePicChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            const base64 = ev.target.result;
+            setProfile(prev => ({ ...prev, picture: base64 }));
+            try {
+                await uploadProfilePicture(base64);
+            } catch (err) {
+                console.error('Failed to upload profile picture:', err);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleBgPicChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            const base64 = ev.target.result;
+            setProfile(prev => ({ ...prev, bgPicture: base64 }));
+            try {
+                await uploadBgPicture(base64);
+            } catch (err) {
+                console.error('Failed to upload background picture:', err);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     // Experience Handlers
@@ -144,19 +183,45 @@ export default function Profile() {
                 {/* Main Column */}
                 <div className="profile-main-col">
 
+                    {/* Hidden file inputs */}
+                    <input
+                        ref={profilePicInputRef}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleProfilePicChange}
+                    />
+                    <input
+                        ref={bgPicInputRef}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={handleBgPicChange}
+                    />
+
                     {/* Centered Header Card */}
                     <div className="profile-header-card card">
-                        <div className="profile-cover">
-                            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=400&fit=crop" alt="cover" />
-                            <div className="cover-actions">
+                        <div className="profile-cover" onClick={() => bgPicInputRef.current.click()} style={{ cursor: 'pointer' }}>
+                            <img
+                                src={profile.bgPicture || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=400&fit=crop"}
+                                alt="cover"
+                            />
+                            <div className="cover-upload-overlay">
+                                <Camera size={28} />
+                                <span>Change Cover</span>
+                            </div>
+                            <div className="cover-actions" onClick={e => e.stopPropagation()}>
                                 <button className="cover-btn"><Share2 size={16} /></button>
                                 <button className="cover-btn"><MoreHorizontal size={16} /></button>
                             </div>
                         </div>
 
                         <div className="profile-header-content">
-                            <div className="profile-avatar-centered">
+                            <div className="profile-avatar-centered" onClick={() => profilePicInputRef.current.click()} style={{ cursor: 'pointer' }}>
                                 <img src={profile.picture || "/bogdan.png"} alt={profile.name} />
+                                <div className="avatar-upload-overlay">
+                                    <Camera size={20} />
+                                </div>
                                 <div className="status-badge" />
                             </div>
 
@@ -187,10 +252,29 @@ export default function Profile() {
                                     <p className="profile-headline">{profile.bio || 'Add a bio to tell others about yourself'}</p>
                                 )}
 
+                                {isEditing && (
+                                    <div className="edit-portfolio-row" style={{ marginTop: '12px' }}>
+                                        <input 
+                                            placeholder="Portfolio URL (https://...)"
+                                            value={profile.portfolioUrl}
+                                            onChange={e => setProfile({...profile, portfolioUrl: e.target.value})}
+                                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
+                                        />
+                                    </div>
+                                )}
+
                                 <div className="profile-meta-row">
                                     <span className="meta-item"><MapPin size={14} /> ThinkGrid HQ</span>
                                     <span className="meta-divider">|</span>
                                     <span className="meta-item"><Calendar size={14} /> Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                                    {profile.portfolioUrl && (
+                                        <>
+                                            <span className="meta-divider">|</span>
+                                            <a href={profile.portfolioUrl} target="_blank" rel="noopener noreferrer" className="meta-item-link">
+                                                <ExternalLink size={14} /> Portfolio
+                                            </a>
+                                        </>
+                                    )}
                                 </div>
 
                                 <div className="profile-header-actions">

@@ -40,55 +40,24 @@ export default function Materials() {
         try {
             const data = await getMaterials();
             
-            // Start with base mock cards
-            const MOCK_CARDS = [
-                {
-                    _id: 'placeholder-1',
-                    title: 'Course Syllabus & Notes',
-                    category: 'document',
-                    instructor: 'ThinkGrid',
-                    tags: ['PPT', 'PDF'],
-                    points: 0,
-                    resources: []
-                },
-                {
-                    _id: 'placeholder-2',
-                    title: 'Reference Books',
-                    category: 'document',
-                    instructor: 'ThinkGrid',
-                    tags: ['PPT', 'PDF'],
-                    points: 0,
-                    resources: []
-                }
-            ];
-
-            // Group all materials (mocks + fetched) by title so uploads merge into the same card
-            const allItems = [...MOCK_CARDS, ...data];
-            const groupedMap = new Map();
-
-            allItems.forEach(item => {
-                if (!groupedMap.has(item.title)) {
-                    // First time seeing this title, create base entry
-                    groupedMap.set(item.title, {
-                        ...item,
-                        resources: [...(item.resources || [])]
-                    });
-                } else {
-                    // Title already exists, merge new resources into it
-                    const existing = groupedMap.get(item.title);
-                    if (item.resources && item.resources.length > 0) {
-                        existing.resources.push(...item.resources);
-                    }
+            // Filter out any invalid items and set materials
+            const finalCards = data.filter(m => m && m._id);
+            setMaterials(finalCards);
+            
+            // Populate savedIds from server data
+            const saved = new Set();
+            finalCards.forEach(m => {
+                const isSavedByUser = m.savedBy?.some(id => (id._id || id) === user._id);
+                if (isSavedByUser) {
+                    saved.add(m._id);
                 }
             });
-
-            const finalCards = Array.from(groupedMap.values());
-            setMaterials(finalCards);
+            setSavedIds(saved);
             
             // If a material is currently selected in the modal, update it so resources appear immediately
             setSelectedMaterial(prev => {
                 if (!prev) return null;
-                return finalCards.find(m => m.title === prev.title) || prev;
+                return finalCards.find(m => m._id === prev._id) || prev;
             });
         } catch (err) {
             console.error('Error fetching materials:', err);

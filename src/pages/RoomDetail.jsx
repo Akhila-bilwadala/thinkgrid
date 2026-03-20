@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
     ArrowLeft, MessageSquare, ThumbsUp, Send, Plus, X, 
     Search, Pin, Paperclip, Share2, MoreVertical, 
-    CheckCircle2, AlertCircle, Zap, Bug, Tag
+    CheckCircle2, AlertCircle, Zap, Bug, Tag, LogOut
 } from 'lucide-react';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -100,6 +100,18 @@ export default function RoomDetail({ room, onBack }) {
     setOpenReplies(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
+  const handleLeaveRoom = async () => {
+    if (!window.confirm('Are you sure you want to leave this room? You will be removed from the member list.')) return;
+    try {
+      const { leaveRoom } = await import('../api/rooms');
+      await leaveRoom(room._id);
+      localStorage.removeItem('activeRoomId');
+      onBack(); // go back to the rooms list
+    } catch (err) {
+      console.error('Failed to leave room:', err);
+    }
+  };
+
   const getInitials = (name) => name ? name.charAt(0).toUpperCase() : '?';
   const timeAgo = (date) => {
     const diff = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -138,35 +150,35 @@ export default function RoomDetail({ room, onBack }) {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="rd-create-btn" onClick={() => setShowNewPost(true)}>
-            <Plus size={16} /> Create
+          <button className={`rd-create-btn ${showNewPost ? 'active' : ''}`} onClick={() => setShowNewPost(!showNewPost)}>
+            {showNewPost ? <X size={16} /> : <Plus size={16} />}
+            {showNewPost ? 'Cancel' : 'Create'}
           </button>
           <div className="rd-member-peek">
-            <div className="rd-avatar-stack">
-              <div className="rd-mini-avatar" style={{ background: '#6366f1' }}>A</div>
-              <div className="rd-mini-avatar" style={{ background: '#ef4444' }}>B</div>
-              <div className="rd-mini-avatar-more">+12</div>
-            </div>
+            <button className="rd-leave-action-btn" onClick={handleLeaveRoom} title="Unjoin and Exit Room">
+              <LogOut size={14} /> Leave
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── NEW POST MODAL ── */}
-      {showNewPost && (
-        <div className="rd-overlay" onClick={() => setShowNewPost(false)}>
-          <div className="rd-modal" onClick={e => e.stopPropagation()}>
-            <div className="rd-modal-head">
+      {/* ── CONDITIONAL RENDERING: FEED OR COMPOSER ── */}
+      <div className="rd-main-flow">
+        {showNewPost ? (
+          <div className="rd-inline-composer animate-up">
+            <div className="rd-composer-header">
               <span className="rd-mini-label">Post to community</span>
-              <button className="rd-close" onClick={() => setShowNewPost(false)}><X size={18} /></button>
+              <h2>New Discussion</h2>
             </div>
             
-            <div className="rd-modal-content">
+            <div className="rd-composer-body">
               <div className="rd-input-group">
                 <input
                   placeholder="New Discussion Title"
                   value={newPostTitle}
                   onChange={e => setNewPostTitle(e.target.value)}
                   className="rd-form-input"
+                  autoFocus
                 />
                 <textarea
                   placeholder="What's on your mind? Share details, ask for help, or post an update..."
@@ -196,22 +208,19 @@ export default function RoomDetail({ room, onBack }) {
               </div>
             </div>
             
-            <div className="rd-modal-actions">
+            <div className="rd-composer-footer">
               <button className="rd-cancel" onClick={() => setShowNewPost(false)}>Cancel</button>
               <button className="rd-submit" onClick={handleCreatePost}>Publish Post</button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* ── POST FEED ── */}
-      <div className="rd-feed-body">
-        {loading ? (
-          <div className="rd-state-msg">
-             <div className="rd-spinner"></div>
-             <p>Syncing discussion threads...</p>
-          </div>
-        ) : posts.length > 0 ? posts.map(post => {
+        ) : (
+          <div className="rd-feed-body">
+            {loading ? (
+              <div className="rd-state-msg">
+                 <div className="rd-spinner"></div>
+                 <p>Syncing discussion threads...</p>
+              </div>
+            ) : posts.length > 0 ? posts.map(post => {
           const isLiked = post.likedBy?.includes(user._id);
           const tagInfo = TAG_CONFIG[post.tag] || TAG_CONFIG.Discussion;
           
@@ -323,6 +332,8 @@ export default function RoomDetail({ room, onBack }) {
           </div>
         )}
       </div>
+     )}
     </div>
+   </div>
   );
 }

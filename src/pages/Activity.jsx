@@ -1,52 +1,146 @@
 import React, { useState, useEffect } from 'react';
-import { History, Briefcase, RefreshCw, MessageSquare, ArrowRight, Zap, Star, ExternalLink } from 'lucide-react';
+import { Search, ChevronRight, MessageSquare, Zap, Star, Trophy, Briefcase, GraduationCap, Code, BookOpen, Layers } from 'lucide-react';
 import './Activity.css';
 import { getRooms } from '../api/rooms';
 import { getMaterials } from '../api/materials';
+import { getLabs } from '../api/labs';
 import { useAuth } from '../context/AuthContext';
+import { calculateElitePoints } from '../utils/pointsCalculator';
 
 export default function Activity({ onEnterRoom }) {
     const { user } = useAuth();
     const [joinedRooms, setJoinedRooms] = useState([]);
-    const [savedMaterials, setSavedMaterials] = useState([]);
-    const [timeline, setTimeline] = useState([]);
+    const [savedNotes, setSavedNotes] = useState([]);
+    const [joinedLabs, setJoinedLabs] = useState([]);
+    const [skillExchange, setSkillExchange] = useState([]);
+    const [stats, setStats] = useState({ rooms: 0, notes: 0, projects: 0, contributions: 0 });
+    const [points, setPoints] = useState(0);
     const [loading, setLoading] = useState(true);
+
+    const [weeklyActivity, setWeeklyActivity] = useState([]);
+    const [growth, setGrowth] = useState({ value: 0, isPos: true });
 
     useEffect(() => {
         const fetchActivity = async () => {
             try {
-                const [rooms, materials] = await Promise.all([
+                const [allRooms, allMaterials, allLabs] = await Promise.all([
                     getRooms(),
-                    getMaterials()
+                    getMaterials(),
+                    getLabs()
                 ]);
                 
-                const userJoined = rooms.filter(r => 
-                    r.members?.some(m => (m._id || m) === user._id)
-                );
-                const userSaved = materials.filter(m => m.savedBy?.some(id => (id._id || id) === user._id));
+                // 1. Filter Joined Rooms
+                const myRooms = allRooms.filter(r => r.members?.some(m => (m._id || m) === user._id));
+                setJoinedRooms(myRooms);
+
+                // 2. Filter Saved Notes/Materials
+                const mySaved = allMaterials.filter(m => m.savedBy?.includes(user._id));
+                setSavedNotes(mySaved);
+
+                // 3. Filter Joined Projects/Labs
+                const myLabs = allLabs.filter(l => l.host === user.name || l.members?.includes(user.name));
+                setJoinedLabs(myLabs);
+
+                // 4. Filter Skill Exchange
+                const exchangeItems = allMaterials.filter(m => m.category?.toLowerCase().includes('exchange') || m.isExchange);
+                setSkillExchange(exchangeItems);
+
+                // 5. Calculate Contributions (Uploads)
+                const myUploads = allMaterials.filter(m => m.uploadedBy === user._id);
                 
-                setJoinedRooms(userJoined);
-                setSavedMaterials(userSaved);
+                setStats({
+                    rooms: myRooms.length,
+                    notes: mySaved.length,
+                    projects: myLabs.length,
+                    contributions: myUploads.length
+                });
 
-                // Aggregate for Timeline
-                const events = [
-                    ...userJoined.map(r => ({
-                        id: `room-${r._id}`,
-                        type: 'room',
-                        title: r.name,
-                        date: r.updatedAt || r.createdAt,
-                        msg: `Joined the ${r.category || 'Discussion'} Room`
-                    })),
-                    ...userSaved.map(m => ({
-                        id: `save-${m._id}`,
-                        type: 'save',
-                        title: m.title,
-                        date: m.updatedAt || m.createdAt,
-                        msg: `Saved to your Materials Hub`
-                    }))
-                ].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Calculate Points
+                const totalPts = calculateElitePoints(myUploads, myLabs, myRooms);
+                setPoints(totalPts);
 
-                setTimeline(events);
+                // ── LIVE ACTIVITY AGGREGATION ──
+                const now = new Date();
+                const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                
+                // Helper: Get point contribution by item creation date
+                const getPointsByDate = (items, pointsPerItem, dateRangeStart, dateRangeEnd) => {
+                    const activityMap = {};
+                    items.forEach(item => {
+                        const created = new Date(item.createdAt);
+                        if (created >= dateRangeStart && created <= dateRangeEnd) {
+                            const dateStr = created.toDateString();
+                            activityMap[dateStr] = (activityMap[dateStr] || 0) + pointsPerItem;
+                        }
+                    });
+                    return activityMap;
+                };
+
+                // Current Week (Last 7 days)
+                const startOfCurrentWeek = new Date(now);
+                startOfCurrentWeek.setDate(now.getDate() - 6);
+                startOfCurrentWeek.setHours(0,0,0,0);
+                
+                const endOfCurrentWeek = new Date(now);
+                endOfCurrentWeek.setHours(23,59,59,999);
+
+                // Last Week (7-14 days ago)
+                const startOfLastWeek = new Date(startOfCurrentWeek);
+                startOfLastWeek.setDate(startOfCurrentWeek.getDate() - 7);
+                
+                const endOfLastWeek = new Date(startOfCurrentWeek);
+                endOfLastWeek.setMilliseconds(-1);
+
+                // Map points by date for current and last week
+                const currentData = {
+                    uploads: getPointsByDate(myUploads, 10, startOfCurrentWeek, endOfCurrentWeek),
+                    labs: getPointsByDate(myLabs, 12, startOfCurrentWeek, endOfCurrentWeek),
+                    rooms: getPointsByDate(myRooms, 13, startOfCurrentWeek, endOfCurrentWeek)
+                };
+
+                const lastWeekData = {
+                    uploads: getPointsByDate(myUploads, 10, startOfLastWeek, endOfLastWeek),
+                    labs: getPointsByDate(myLabs, 12, startOfLastWeek, endOfLastWeek),
+                    rooms: getPointsByDate(myRooms, 13, startOfLastWeek, endOfLastWeek)
+                };
+
+                // Build Chart Data
+                const activityChart = [];
+                let thisWeekTotal = 0;
+                let lastWeekTotal = 0;
+
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(startOfCurrentWeek);
+                    d.setDate(startOfCurrentWeek.getDate() + i);
+                    const ds = d.toDateString();
+                    
+                    const dayPoints = (currentData.uploads[ds] || 0) + 
+                                     (currentData.labs[ds] || 0) + 
+                                     (currentData.rooms[ds] || 0);
+                    
+                    thisWeekTotal += dayPoints;
+                    activityChart.push({
+                        day: days[d.getDay()],
+                        points: dayPoints,
+                        active: d.toDateString() === now.toDateString()
+                    });
+                }
+
+                // Previous week total for growth
+                Object.values(lastWeekData.uploads).forEach(v => lastWeekTotal += v);
+                Object.values(lastWeekData.labs).forEach(v => lastWeekTotal += v);
+                Object.values(lastWeekData.rooms).forEach(v => lastWeekTotal += v);
+
+                setWeeklyActivity(activityChart);
+                
+                // Calculate Growth %
+                if (lastWeekTotal === 0) {
+                    setGrowth({ value: thisWeekTotal > 0 ? 100 : 0, isPos: true });
+                } else {
+                    const val = ((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100;
+                    setGrowth({ value: Math.abs(val.toFixed(1)), isPos: val >= 0 });
+                }
+
             } catch (err) {
                 console.error('Error fetching activity:', err);
             } finally {
@@ -54,150 +148,173 @@ export default function Activity({ onEnterRoom }) {
             }
         };
         fetchActivity();
-    }, [user._id]);
+    }, [user._id, user.name]);
 
-    if (loading) return <div className="loading-state">Syncing your Elite history...</div>;
+    if (loading) return <div className="loading-state">Syncing Elite Pulse...</div>;
+
+    const quickStats = [
+        { label: 'Rooms', count: stats.rooms, icon: <MessageSquare size={20} />, color: '#7C3AED', bg: '#F3E8FF' }, // Pastel Purple
+        { label: 'Saved Notes', count: stats.notes, icon: <BookOpen size={20} />, color: '#D97706', bg: '#FEF3C7' },  // Pastel Orange
+        { label: 'Projects', count: stats.projects, icon: <Briefcase size={20} />, color: '#059669', bg: '#ECFDF5' }, // Pastel Teal
+        { label: 'Elite Points', count: points, icon: <Trophy size={20} />, color: '#DB2777', bg: '#FFF1F2' },      // Pastel Pink
+    ];
 
     return (
-        <div className="activity-page animate-up">
-            <header className="activity-header">
-                <div className="header-text">
-                    <h1>Your Activity</h1>
-                    <p>Track your contributions, learning progress, and community engagement.</p>
+        <div className="activity-page">
+            {/* ── HEADER ── */}
+            <header className="activity-header-new">
+                <div className="welcome-section">
+                    <h1>Welcome back, {user.name.split(' ')[0]} 👋</h1>
+                    <p>Your centralized hub for growth, notes, and collaborations.</p>
+                </div>
+                <div className="header-search">
+                    <Search className="search-icon" size={18} />
+                    <input type="text" placeholder="Search your history..." />
                 </div>
             </header>
 
-            {/* ── RECENT ACTIVITY TIMELINE ── */}
-            <section className="activity-section timeline-section">
-                <div className="section-header">
-                    <div className="section-title-wrap">
-                        <History className="section-icon" size={20} />
-                        <h2>Recent Activity</h2>
-                    </div>
-                </div>
-                <div className="timeline-container card">
-                    {timeline.length > 0 ? timeline.map((event, idx) => (
-                        <div key={event.id} className="timeline-item">
-                            <div className="timeline-left">
-                                <div className={`timeline-dot ${event.type}`}>
-                                    {event.type === 'room' ? <MessageSquare size={12} /> : <Star size={12} />}
-                                </div>
-                                {idx < timeline.length - 1 && <div className="timeline-line" />}
-                            </div>
-                            <div className="timeline-content">
-                                <div className="timeline-main">
-                                    <span className="timeline-msg">{event.msg}</span>
-                                    <h4 className="timeline-title">{event.title}</h4>
-                                </div>
-                                <span className="timeline-date">
-                                    {new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                </span>
-                            </div>
+            {/* ── QUICK STATS PILLS ── */}
+            <div className="quick-stats-bar">
+                {quickStats.map((s, i) => (
+                    <div key={i} className="stat-pill" style={{ background: s.bg, borderColor: `${s.color}20` }}>
+                        <div className="stat-pill-icon" style={{ background: '#FFFFFF', color: s.color }}>
+                            {s.icon}
                         </div>
+                        <div className="stat-pill-info">
+                            <span className="count" style={{ color: '#1A1D1F' }}>{s.count}</span>
+                            <span className="label" style={{ color: s.color, fontWeight: 700, fontSize: '0.65rem' }}>{s.label.toUpperCase()}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ── MY ACTIVE ROOMS ── */}
+            <section className="rooms-horizontal-section">
+                <div className="section-head">
+                    <h2>My Active Rooms</h2>
+                    <a href="#" className="view-all">See All</a>
+                </div>
+                <div className="horizontal-scroll">
+                    {joinedRooms.length > 0 ? joinedRooms.map((room, i) => (
+                        <button 
+                            key={room._id} 
+                            className="room-link-btn animate-up" 
+                            onClick={() => onEnterRoom && onEnterRoom(room)}
+                            style={{ animationDelay: `${i * 0.1}s` }}
+                        >
+                            {room.name}
+                        </button>
                     )) : (
-                        <p className="no-activity-text">No recent activity detected.</p>
+                        <p className="empty-state-text">Join a room to see your activity here.</p>
                     )}
                 </div>
             </section>
 
-            <div className="activity-grid">
-                {/* ── PROJECTS SECTION (Static for now) ── */}
-                <section className="activity-section">
-                    <div className="section-header">
-                        <div className="section-title-wrap">
-                            <Briefcase className="section-icon" size={20} />
-                            <h2>Joined Projects</h2>
-                        </div>
-                        <button className="btn-view-all">See all</button>
-                    </div>
+            {/* ── SAVED NOTES & MATERIALS ── */}
+            <section className="notes-horizontal-section">
+                <div className="section-head">
+                    <h2>Saved Materials & Notes</h2>
+                    <a href="#" className="view-all">View Library</a>
+                </div>
+                <div className="horizontal-scroll">
+                    {savedNotes.length > 0 ? savedNotes.map((note, i) => (
+                        <button 
+                            key={note._id} 
+                            className="room-link-btn animate-up"
+                            style={{ animationDelay: `${i * 0.1}s` }}
+                        >
+                            {note.title}
+                        </button>
+                    )) : (
+                        <p className="empty-state-text">Save your first material to build your knowledge base.</p>
+                    )}
+                </div>
+            </section>
 
-                    <div className="project-list">
-                        <div className="project-card-item card">
-                            <div className="project-info">
-                                <div className="project-main">
-                                    <h3 className="project-title">ThinkGrid Web App</h3>
-                                    <span className="project-role">Frontend Lead</span>
-                                </div>
-                                <div className="project-status-badge" data-status="in-progress">
-                                    In Progress
-                                </div>
+            {/* ── MAIN GRID ── */}
+            <div className="activity-grid-new">
+                
+                {/* ── ACTIVITY PULSE (LEFT) ── */}
+                <div className="grid-card chart-card">
+                    <div className="chart-header">
+                        <div className="chart-title-wrap">
+                            <h3>Elite Progress</h3>
+                            <div className="growth-indicator">
+                                <span className="up" style={{ color: growth.isPos ? '#10B981' : '#EF4444', fontWeight: 700 }}>
+                                    {growth.isPos ? '↗' : '↘'} {growth.value}%
+                                </span>
+                                <span className="growth-text" style={{ marginLeft: 8, fontSize: '0.8rem', color: '#9A9FA5' }}>vs last week</span>
                             </div>
-                            <div className="project-progress-wrap">
-                                <div className="progress-label">
-                                    <span>Completion</span>
-                                    <span>75%</span>
+                        </div>
+                        <div className="points-badge">
+                           {points} Elite Pts
+                        </div>
+                    </div>
+
+                    <div className="bar-chart-container">
+                        {weeklyActivity.map((d, i) => (
+                            <div key={i} className="bar-wrapper">
+                                <div className="bar-track">
+                                    <div 
+                                        className={`bar-fill ${d.active ? 'active' : ''}`} 
+                                        style={{ height: `${Math.min(90, (d.points / 30) * 100)}%`, minHeight: d.points > 0 ? '10%' : '0' }}
+                                    />
                                 </div>
-                                <div className="progress-bar-bg">
-                                    <div className="progress-bar-fill" style={{ width: '75%' }} />
-                                </div>
+                                <span className="bar-label">{d.day}</span>
                             </div>
-                        </div>
+                        ))}
                     </div>
-                </section>
+                </div>
 
-                {/* ── SAVED MATERIALS SECTION ── */}
-                <section className="activity-section">
-                    <div className="section-header">
-                        <div className="section-title-wrap">
-                            <Star className="section-icon" size={20} />
-                            <h2>Saved Materials</h2>
-                        </div>
-                        <button className="btn-view-all">See All</button>
-                    </div>
-
-                    <div className="skill-exchange-list">
-                        {savedMaterials.length > 0 ? savedMaterials.map(item => (
-                            <div key={item._id} className="skill-exchange-card card">
-                                <div className="skill-card-left">
-                                    <div className="skill-type-tag learning">
-                                        <Zap size={12} />
-                                        {item.category || 'General'}
-                                    </div>
-                                    <h3 className="skill-name">{item.title}</h3>
-                                    <p className="skill-partner">Instructor: {item.instructor || 'Elite Mentor'}</p>
+                {/* ── JOINED PROJECTS (RIGHT) ── */}
+                <div className="grid-card schedule-card">
+                    <h3>Joined Projects</h3>
+                    <div className="daily-schedule-list">
+                        {joinedLabs.length > 0 ? joinedLabs.map(lab => (
+                            <div key={lab._id} className="schedule-item">
+                                <div className="schedule-icon" style={{ background: '#FFF7ED' }}>
+                                    <Briefcase size={18} color="#F59E0B" />
                                 </div>
-                                <div className="skill-card-right">
-                                    <button className="btn-project-action"><ExternalLink size={14} /></button>
+                                <div className="schedule-info">
+                                    <h4>{lab.title}</h4>
+                                    <p>{lab.status || 'Active Lab'}</p>
                                 </div>
-                            </div>
-                        )) : (
-                            <p className="no-activity-text">No saved materials yet.</p>
-                        )}
-                    </div>
-                </section>
-
-                {/* ── GROUPS & DISCUSSIONS ── */}
-                <section className="activity-section full-width">
-                    <div className="section-header">
-                        <div className="section-title-wrap">
-                            <MessageSquare className="section-icon" size={20} />
-                            <h2>Joined Rooms</h2>
-                        </div>
-                    </div>
-
-                    <div className="groups-grid">
-                        {joinedRooms.length > 0 ? joinedRooms.map(group => (
-                            <div key={group._id} className="group-card-item card">
-                                <div className="group-card-content">
-                                    <div className="group-icon-placeholder">
-                                        {group.name.charAt(0)}
-                                    </div>
-                                    <div className="group-info">
-                                        <h3 className="group-name">{group.name}</h3>
-                                        <span className="group-type">{group.category || 'General'}</span>
-                                    </div>
-                                </div>
-                                <div className="group-footer">
-                                    <span className="last-activity">Joined</span>
-                                    <button className="btn-enter" onClick={() => onEnterRoom && onEnterRoom(group)}>Enter Room <ArrowRight size={14} /></button>
+                                <div className="schedule-action">
+                                    <ChevronRight size={18} />
                                 </div>
                             </div>
                         )) : (
-                            <p className="no-activity-text">You haven't joined any rooms yet.</p>
+                            <p className="empty-state-text">Explore Active Labs to collaborate on projects.</p>
                         )}
                     </div>
-                </section>
+                </div>
+
             </div>
+
+            {/* ── SKILL EXCHANGE SECTION (OPTIONAL) ── */}
+            {skillExchange.length > 0 && (
+                <section className="skill-exchange-section animate-up">
+                    <div className="section-head">
+                        <h2>Skill Exchange Library</h2>
+                        <span className="view-all">{skillExchange.length} items available</span>
+                    </div>
+                    <div className="horizontal-scroll" style={{ marginBottom: 0 }}>
+                        {skillExchange.map((item, i) => (
+                            <div key={item._id} className="activity-card-new" style={{ minWidth: '220px' }}>
+                                <div className="card-top" style={{ marginBottom: 12 }}>
+                                    <div className="card-icon-box" style={{ background: '#FDF2F8', width: '36px', height: '36px' }}>
+                                        <Layers size={16} color="#ec4899" />
+                                    </div>
+                                    <div className="card-meta">
+                                        <h3 style={{ fontSize: '0.85rem' }}>{item.title}</h3>
+                                    </div>
+                                </div>
+
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 }

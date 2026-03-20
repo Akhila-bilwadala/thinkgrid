@@ -10,19 +10,39 @@ import Activity from './pages/Activity';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RoomDetail from './pages/RoomDetail';
+import AIStudyTools from './pages/AIStudyTools';
 import Footer from './components/layout/Footer';
 import './pages/pages.css';
 
 import { useAuth } from './context/AuthContext';
 
 function App() {
-  const [tab, setTab] = useState('home');
+  const [tab, setTab] = useState(() => localStorage.getItem('activeRoomId') ? 'room-detail' : 'home');
   const [authView, setAuthView] = useState('login'); // 'login' or 'register'
   const [selectedRoom, setSelectedRoom] = useState(null);
   const { user, loading, logout } = useAuth();
 
+  // Effect to load active room details if ID is in localStorage
+  React.useEffect(() => {
+    const activeRoomId = localStorage.getItem('activeRoomId');
+    if (activeRoomId && !selectedRoom) {
+      // Fetch room detail and set selectedRoom
+      import('./api/rooms').then(({ getRoom }) => {
+        getRoom(activeRoomId).then(data => {
+          setSelectedRoom(data);
+          setTab('room-detail');
+        }).catch(err => {
+          console.error('Failed to load active room:', err);
+          localStorage.removeItem('activeRoomId');
+          setTab('home');
+        });
+      });
+    }
+  }, []);
+
   const navigateToRoom = (room) => {
     setSelectedRoom(room);
+    localStorage.setItem('activeRoomId', room._id);
     setTab('room-detail');
   };
 
@@ -33,8 +53,15 @@ function App() {
     switch (tab) {
       case 'home': return <Home onNavigate={setTab} />;
       case 'profile': return <Profile />;
-      case 'rooms': return <Rooms currentTab={tab} onEnterRoom={navigateToRoom} />;
+      case 'rooms': 
+        const activeRoomId = localStorage.getItem('activeRoomId');
+        if (activeRoomId && selectedRoom) {
+          // If we navigate to "Rooms" but already have an active room, show it.
+          return <RoomDetail room={selectedRoom} onBack={() => setTab('home')} />;
+        }
+        return <Rooms currentTab={tab} onEnterRoom={navigateToRoom} />;
       case 'materials': return <Materials />;
+      case 'aistudy': return <AIStudyTools />;
       case 'explore': return <Explore />;
       case 'labs': return <Labs />;
       case 'activity': return <Activity onEnterRoom={navigateToRoom} />;

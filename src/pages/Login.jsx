@@ -70,6 +70,18 @@ const Login = ({ onSwitch }) => {
                                     onChange={e => { setPassword(e.target.value); setError(''); }}
                                     required
                                 />
+                                <span
+                                    onClick={() => setShowPass(v => !v)}
+                                    style={{
+                                        position: 'absolute', right: password ? '42px' : '14px',
+                                        cursor: 'pointer', color: 'rgba(255,255,255,0.3)',
+                                        fontSize: '0.75rem', userSelect: 'none',
+                                        transition: 'color 0.2s'
+                                    }}
+                                    title={showPass ? 'Hide' : 'Show'}
+                                >
+                                    {showPass ? '🙈' : '👁️'}
+                                </span>
                                 {password && <span className="field-check">✓</span>}
                             </div>
                         </div>

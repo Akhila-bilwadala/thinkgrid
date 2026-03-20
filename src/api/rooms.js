@@ -19,3 +19,8 @@ export const createRoom = async (roomData) => {
     const { data } = await client.post('/rooms', roomData);
     return data;
 };
+
+export const getRoom = async (id) => {
+    const { data } = await client.get(`/rooms/${id}`);
+    return data;
+};

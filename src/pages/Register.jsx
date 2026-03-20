@@ -7,6 +7,8 @@ const Register = ({ onSwitch }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('Student');
+    const [institution, setInstitution] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { loginUser } = useAuth();
@@ -16,7 +18,13 @@ const Register = ({ onSwitch }) => {
         setError('');
         setLoading(true);
         try {
-            const data = await registerApi({ name, email, password });
+            const data = await registerApi({ 
+                name, 
+                email, 
+                password, 
+                role, 
+                company: institution 
+            });
             loginUser(data);
         } catch (err) {
             setError(err.response?.data?.error || 'Registration failed. Try again.');
@@ -76,10 +84,41 @@ const Register = ({ onSwitch }) => {
                                     type="password"
                                     placeholder="••••••••"
                                     value={password}
-                                    onChange={e => setPassword(e.target.value)}
+                                    onChange={e => { setPassword(e.target.value); setError(''); }}
                                     required
                                 />
                                 {password && <span className="field-check">✓</span>}
+                            </div>
+                        </div>
+
+                        <div className="auth-row">
+                            <div className="auth-field">
+                                <label>Current Role</label>
+                                <div className="auth-input-line">
+                                    <select 
+                                        value={role} 
+                                        onChange={e => setRole(e.target.value)}
+                                        className="auth-select-input"
+                                        required
+                                    >
+                                        <option value="Student">Student</option>
+                                        <option value="Working Professional">Working Professional</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="auth-field">
+                                <label>{role === 'Student' ? 'College / University' : 'Company Name'}</label>
+                                <div className="auth-input-line">
+                                    <input
+                                        type="text"
+                                        placeholder={role === 'Student' ? "e.g. Stanford University" : "e.g. Google"}
+                                        value={institution}
+                                        onChange={e => setInstitution(e.target.value)}
+                                        required
+                                    />
+                                    {institution && <span className="field-check">✓</span>}
+                                </div>
                             </div>
                         </div>
 

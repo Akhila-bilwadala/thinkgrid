@@ -38,10 +38,12 @@ export default function Rooms({ currentTab, onEnterRoom }) {
                     r._id === id ? { ...r, members: r.members.filter(m => m !== user._id) } : r
                 ));
             } else {
-                await joinRoom(id);
+                const updatedRoom = await joinRoom(id);
                 setRooms(prev => prev.map(r => 
-                    r._id === id ? { ...r, members: [...(r.members || []), user._id] } : r
+                    r._id === id ? updatedRoom : r
                 ));
+                // Auto-enter room
+                if (onEnterRoom) onEnterRoom(updatedRoom);
             }
         } catch (err) {
             console.error('Error toggling room join:', err);
