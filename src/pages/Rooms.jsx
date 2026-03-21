@@ -1,14 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, Image as ImageIcon, X } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Plus, Filter, Users, X, MessageSquare, TrendingUp, Zap, Hexagon, Code, Palette, FlaskConical, Globe } from 'lucide-react';
 import './Rooms.css';
 import { getRooms, joinRoom, leaveRoom, createRoom } from '../api/rooms';
 import { useAuth } from '../context/AuthContext';
+
+const CATEGORIES = [
+    { id: 'All', label: 'All Rooms', icon: Globe },
+    { id: 'Technology', label: 'Tech & Dev', icon: Code },
+    { id: 'Design', label: 'Design', icon: Palette },
+    { id: 'Science', label: 'Science', icon: FlaskConical },
+    { id: 'General', label: 'General', icon: MessageSquare }
+];
 
 export default function Rooms({ currentTab, onEnterRoom }) {
     const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // New States
+    const [activeCategory, setActiveCategory] = useState('All');
+    const [sortBy, setSortBy] = useState('popular'); // 'popular', 'az', 'newest'
+    
+    // Modal variants
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newRoomName, setNewRoomName] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
@@ -27,6 +41,15 @@ export default function Rooms({ currentTab, onEnterRoom }) {
         fetchRooms();
     }, []);
 
+    // ── Helper to mock categories based on keywords ──
+    const getRoomCategory = (r) => {
+        const text = (r.name + ' ' + r.description).toLowerCase();
+        if (text.includes('dev') || text.includes('tech') || text.includes('code') || text.includes('software')) return 'Technology';
+        if (text.includes('design') || text.includes('ui') || text.includes('art') || text.includes('ux')) return 'Design';
+        if (text.includes('science') || text.includes('math') || text.includes('physics')) return 'Science';
+        return 'General';
+    };
+
     const toggleJoin = async (id) => {
         const room = rooms.find(r => r._id === id);
         const isJoined = room.members?.includes(user._id);
@@ -42,7 +65,6 @@ export default function Rooms({ currentTab, onEnterRoom }) {
                 setRooms(prev => prev.map(r => 
                     r._id === id ? updatedRoom : r
                 ));
-                // Auto-enter room
                 if (onEnterRoom) onEnterRoom(updatedRoom);
             }
         } catch (err) {
@@ -65,69 +87,126 @@ export default function Rooms({ currentTab, onEnterRoom }) {
         }
     };
 
-    const displayed = rooms.filter(r => {
-        const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const isJoined = r.members?.includes(user._id);
-        const matchesTab = currentTab === 'my-rooms' ? isJoined : true;
-        return matchesSearch && matchesTab;
-    });
+    // ── Filtering and Sorting Logic ──
+    const displayedRooms = useMemo(() => {
+        let filtered = rooms.filter(r => {
+            const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                  (r.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+            const isJoined = r.members?.includes(user._id);
+            const matchesMyRooms = currentTab === 'my-rooms' ? isJoined : true;
+            const matchesCat = activeCategory === 'All' ? true : getRoomCategory(r) === activeCategory;
+            
+            return matchesSearch && matchesMyRooms && matchesCat;
+        });
 
-    if (loading) return <div className="loading-state">Entering Thought Corridors...</div>;
+        // Sorting
+        filtered.sort((a, b) => {
+            if (sortBy === 'popular') return (b.members?.length || 0) - (a.members?.length || 0);
+            if (sortBy === 'az') return a.name.localeCompare(b.name);
+            // 'newest' (assuming _id timestamp fallback if no createdAt)
+            return b._id.localeCompare(a._id);
+        });
+
+        return filtered;
+    }, [rooms, searchQuery, currentTab, activeCategory, sortBy, user._id]);
+
+    const stats = {
+        total: rooms.length,
+        active: rooms.filter(r => r.members?.length > 2).length, // Mock active logic
+        joined: rooms.filter(r => r.members?.includes(user._id)).length
+    };
+
+    if (loading) return (
+        <div className="rooms-loading-state">
+            <div className="rooms-spinner"></div>
+            <p>Entering Thought Corridors...</p>
+        </div>
+    );
 
     return (
-        <div className="rooms-container">
-            {/* Header */}
-            <div className="rooms-header-block">
-                <div className="rooms-header-text">
-                    <h1>{currentTab === 'my-rooms' ? 'My Rooms' : 'Discussions Room'}</h1>
-                    <p>{currentTab === 'my-rooms' ? 'Communities you are currently participating in.' : 'Connect with peers to share knowledge and discuss topics.'}</p>
+        <div className="rooms-container animate-fade-in">
+
+            {/* ── Control Bar (Sticky) ── */}
+            <div className="rooms-control-bar">
+                <div className="rooms-tabs">
+                    {CATEGORIES.map(cat => (
+                        <button 
+                            key={cat.id}
+                            className={`room-tab-btn ${activeCategory === cat.id ? 'active' : ''}`}
+                            onClick={() => setActiveCategory(cat.id)}
+                        >
+                            <cat.icon size={16} /> <span>{cat.label}</span>
+                        </button>
+                    ))}
                 </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <div className="rooms-search-wrapper">
-                        <Search size={18} />
+
+                <div className="rooms-controls-right">
+                    <div className="rooms-search-box">
+                        <Search size={16} />
                         <input
-                            placeholder="Search rooms..."
+                            placeholder="Search discussions..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button 
-                        onClick={() => setShowCreateModal(true)} 
-                        style={{ background: '#111827', color: 'white', padding: '10px 16px', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                        <Plus size={18} /> Create
+                    <div className="rooms-sort-box">
+                        <Filter size={16} />
+                        <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                            <option value="popular">Most Members</option>
+                            <option value="newest">Newest First</option>
+                            <option value="az">A-Z</option>
+                        </select>
+                    </div>
+                    <button className="rooms-create-btn" onClick={() => setShowCreateModal(true)}>
+                        <Plus size={18} /> <span>Create</span>
                     </button>
                 </div>
             </div>
 
-            {/* Cards Grid */}
-            <div className="rooms-wf-grid">
-                {displayed.length > 0 ? displayed.map(r => {
+            {/* ── Layout Grid ── */}
+            <div className="rooms-grid">
+                {displayedRooms.length > 0 ? displayedRooms.map(r => {
                     const isJoined = r.members?.includes(user._id);
+                    const memberCount = r.members?.length || 0;
+                    const cat = getRoomCategory(r);
+
                     return (
-                        <div key={r._id} className="room-wf-card">
-                            <div className="room-wf-cover">
-                                <img src={r.image || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80'} alt={r.name} className="room-wf-image" />
+                        <div key={r._id} className="room-card">
+                            <div className="room-card-head">
+                                <div className="room-card-icon-wrap" data-category={cat}>
+                                    {cat === 'Technology' && <Code size={20} />}
+                                    {cat === 'Design' && <Palette size={20} />}
+                                    {cat === 'Science' && <FlaskConical size={20} />}
+                                    {cat === 'General' && <MessageSquare size={20} />}
+                                </div>
+                                <div className="room-card-badges">
+                                    <span className="room-cat-badge">{cat}</span>
+                                    {memberCount > 5 && <span className="room-hot-badge"><Zap size={12}/> Hot</span>}
+                                </div>
                             </div>
 
-                        <div className="room-wf-content">
-                                <h3 className="room-wf-title">{r.name}</h3>
-                                <p className="room-wf-desc">{r.description}</p>
+                            <div className="room-card-body">
+                                <h3 className="room-card-title">{r.name}</h3>
+                                <p className="room-card-desc">{r.description || 'No description provided.'}</p>
+                            </div>
 
-                                <div style={{ display: 'flex', gap: '10px' }}>
+                            <div className="room-card-foot">
+                                <div className="room-member-count">
+                                    <Users size={14} /> <span>{memberCount}</span>
+                                </div>
+                                <div className="room-actions-wrapper">
                                     <button
-                                        className={`room-wf-action ${isJoined ? 'joined' : ''}`}
+                                        className={`room-action-btn ${isJoined ? 'joined' : ''}`}
                                         onClick={() => toggleJoin(r._id)}
                                     >
-                                        {isJoined ? 'Joined ✓' : 'Join Room'}
+                                        {isJoined ? 'Joined ✓' : 'Join'}
                                     </button>
                                     {isJoined && (
                                         <button
-                                            className="room-wf-action"
-                                            style={{ background: '#111827', color: 'white' }}
+                                            className="room-action-btn enter"
                                             onClick={() => onEnterRoom && onEnterRoom(r)}
                                         >
-                                            Enter Room →
+                                            Enter
                                         </button>
                                     )}
                                 </div>
@@ -135,40 +214,61 @@ export default function Rooms({ currentTab, onEnterRoom }) {
                         </div>
                     );
                 }) : (
-                    <div className="no-results">No rooms found. Be the first to create one!</div>
+                    <div className="rooms-empty">
+                        <div className="rooms-empty-icon"><Search size={48} /></div>
+                        <h3>No discussion rooms found</h3>
+                        <p>Try adjusting your filters or search query.</p>
+                        <button className="rooms-create-btn outline" onClick={() => setShowCreateModal(true)}>
+                            Create a Room
+                        </button>
+                    </div>
                 )}
             </div>
 
-            {/* Create Room Modal */}
+            {/* ── Create Room Modal ── */}
             {showCreateModal && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 5000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowCreateModal(false)}>
-                    <div style={{ background: 'white', padding: '24px 28px', borderRadius: '16px', width: '100%', maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>Create Room</h2>
-                            <button onClick={() => setShowCreateModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><X size={22} color="#6B7280" /></button>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                <div className="rooms-modal-overlay" onClick={() => setShowCreateModal(false)}>
+                    <div className="rooms-modal" onClick={e => e.stopPropagation()}>
+                        <div className="rooms-modal-head">
+                            <div className="rooms-modal-icon-bg"><Plus size={24}/></div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>Room Name</label>
+                                <h2>Create New Room</h2>
+                                <p>Start a new discussion community</p>
+                            </div>
+                            <button className="rooms-modal-close" onClick={() => setShowCreateModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="rooms-modal-body">
+                            <div className="rooms-field">
+                                <label>Room Name</label>
                                 <input 
                                     type="text" 
-                                    placeholder="e.g. Frontend Developers..." 
+                                    placeholder="e.g. Frontend Architecture" 
                                     value={newRoomName}
                                     onChange={e => setNewRoomName(e.target.value)}
-                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #F1F5F9', background: '#F9FAFB', color: '#111827', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
+                                    autoFocus
                                 />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>Description (Optional)</label>
+                            <div className="rooms-field">
+                                <label>Description (Optional)</label>
                                 <textarea 
-                                    placeholder="What is this room about?" 
+                                    placeholder="What will this room discuss?" 
                                     value={newRoomDesc}
                                     onChange={e => setNewRoomDesc(e.target.value)}
-                                    style={{ width: '100%', minHeight: '80px', padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #F1F5F9', background: '#F9FAFB', color: '#111827', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                                 />
                             </div>
                         </div>
-                        <button onClick={handleCreateRoom} style={{ width: '100%', background: '#111827', color: 'white', padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Create Discussion Room</button>
+                        <div className="rooms-modal-foot">
+                            <button className="rooms-cancel-btn" onClick={() => setShowCreateModal(false)}>Cancel</button>
+                            <button 
+                                className="rooms-submit-btn" 
+                                onClick={handleCreateRoom}
+                                disabled={!newRoomName.trim()}
+                            >
+                                Create Room
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
