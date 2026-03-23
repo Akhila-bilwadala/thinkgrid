@@ -56,7 +56,8 @@ export default function Labs() {
         tags: '',
         recruitDeadline: '', // ✅ New field
         host: user?.name || '',
-        hostEmail: user?.email || ''
+        hostEmail: user?.email || '',
+        avatar: user?.picture || ''
     });
 
     useEffect(() => {
@@ -64,7 +65,8 @@ export default function Labs() {
             setFormData(prev => ({
                 ...prev,
                 host: prev.host || user.name || '',
-                hostEmail: prev.hostEmail || user.email || ''
+                hostEmail: prev.hostEmail || user.email || '',
+                avatar: prev.avatar || user.picture || ''
             }));
         }
     }, [user]);
@@ -90,6 +92,7 @@ export default function Labs() {
         try {
             const payload = {
                 ...formData,
+                avatar: formData.avatar || '/default-avatar.png',
                 tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
             };
             await createLab(payload);
@@ -102,7 +105,8 @@ export default function Labs() {
                 tags: '',
                 recruitDeadline: '',
                 host: user?.name || '',
-                hostEmail: user?.email || ''
+                hostEmail: user?.email || '',
+                avatar: user?.picture || ''
             });
             fetchLabs();
         } catch (err) {
@@ -132,18 +136,6 @@ export default function Labs() {
 
     return (
         <div className="labs-container">
-            {/* Header */}
-            <div className="labs-header">
-                <div className="labs-header-content">
-                    <h1>Active Labs</h1>
-                    <p>Join live projects hosted by peers, contribute code, and build your portfolio.</p>
-                </div>
-                <button className="labs-create-btn" onClick={() => setShowHostModal(true)}>
-                    <Plus size={18} />
-                    Host Project
-                </button>
-            </div>
-
             {/* Toolbar */}
             <div className="labs-toolbar">
                 <div className="labs-search">
@@ -155,16 +147,23 @@ export default function Labs() {
                     />
                 </div>
 
-                <div className="labs-filters">
-                    {['ALL', 'OPEN', 'CLOSED'].map(f => (
-                        <button
-                            key={f}
-                            className={`labs-filter-btn ${filter === f ? 'active' : ''}`}
-                            onClick={() => setFilter(f)}
-                        >
-                            {f === 'ALL' ? 'All Projects' : f === 'OPEN' ? 'Accepting Contributors' : 'Team Full'}
-                        </button>
-                    ))}
+                <div className="labs-toolbar-right">
+                    <div className="labs-filters">
+                        {['ALL', 'OPEN', 'CLOSED'].map(f => (
+                            <button
+                                key={f}
+                                className={`labs-filter-btn ${filter === f ? 'active' : ''}`}
+                                onClick={() => setFilter(f)}
+                            >
+                                {f === 'ALL' ? 'All' : f === 'OPEN' ? 'Accepting' : 'Full'}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <button className="labs-create-btn" onClick={() => setShowHostModal(true)}>
+                        <Plus size={16} />
+                        Host Project
+                    </button>
                 </div>
             </div>
 
@@ -199,7 +198,7 @@ export default function Labs() {
 
                         <div className="lab-card-footer">
                             <div className="lab-host-info">
-                                <img src={lab.avatar} alt={lab.host} className="lab-host-avatar" />
+                                <img src={(lab.hostEmail === user?.email && user?.picture) ? user.picture : (lab.avatar && lab.avatar !== '/default-avatar.png' ? lab.avatar : '/default-avatar.png')} alt={lab.host} className="lab-host-avatar" />
                                 <div>
                                     <span className="lab-hosted-by">Hosted by</span>
                                     <span className="lab-host-name">{lab.host}</span>

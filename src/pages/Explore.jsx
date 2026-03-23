@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, Github, Linkedin, Award, Star, Zap, Send, X } from 'lucide-react';
+import { 
+    Search, MoreVertical, Github, Linkedin, Award, Star, Zap, 
+    Send, X, Bookmark, Flag, Clock, Globe, Instagram, Twitter, 
+    Facebook, Palette 
+} from 'lucide-react';
 import './Explore.css';
 import { getAllUsers } from '../api/users';
+import { createExchangeRequest } from '../api/exchanges';
 import { useAuth } from '../context/AuthContext';
 
 export default function Explore() {
     const { user } = useAuth();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
+    const [exchangeTopic, setExchangeTopic] = useState('');
+    const [exchangeCredits, setExchangeCredits] = useState(50);
+    const [exchangeDate, setExchangeDate] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', name: '' });
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,8 +23,6 @@ export default function Explore() {
     // Skill Exchange Modal State
     const [showExchangeModal, setShowExchangeModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [exchangeCredits, setExchangeCredits] = useState(50);
-    const [exchangeTopic, setExchangeTopic] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -46,12 +52,32 @@ export default function Explore() {
     const handleExchange = (u) => {
         setSelectedUser(u);
         setShowExchangeModal(true);
+        // Reset form fields when opening modal
+        setExchangeTopic('');
+        setExchangeCredits(50);
+        setExchangeDate('');
     };
 
-    const submitExchange = () => {
-        setToast({ show: true, message: `Exchange request for ${exchangeTopic} sent!`, name: selectedUser.name });
-        setShowExchangeModal(false);
-        setExchangeTopic('');
+    const submitExchange = async () => {
+        if (!exchangeTopic || !exchangeDate) {
+            alert('Please fill in all fields.');
+            return;
+        }
+        try {
+            await createExchangeRequest({
+                receiverId: selectedUser._id,
+                topic: exchangeTopic,
+                credits: exchangeCredits,
+                scheduleDate: exchangeDate
+            });
+            setToast({ show: true, message: `Exchange request for ${exchangeTopic} sent!`, name: selectedUser.name });
+            setShowExchangeModal(false);
+            setExchangeTopic('');
+            setExchangeDate('');
+        } catch (err) {
+            console.error('Error submitting exchange:', err);
+            alert('Failed to send exchange request.');
+        }
         setTimeout(() => setToast({ show: false, message: '', name: '' }), 3000);
     };
 
@@ -95,42 +121,27 @@ export default function Explore() {
             {/* Cards Grid */}
             <div className="mhub-grid">
                 {filtered.length > 0 ? filtered.map(u => (
-                    <div key={u._id} className="mhub-card">
-                        {/* Three-dot menu */}
-                        <button className="mhub-card-menu">
-                            <MoreVertical size={18} />
-                        </button>
-
-                        {/* Avatar */}
-                        <div className="mhub-avatar-wrap">
-                            <img src={u.picture || '/default-avatar.png'} alt={u.name} className="mhub-avatar" />
+                    <div key={u._id} className="mhub-card animate-up">
+                        <div className="mhub-avatar-container">
+                            <img src={u.picture || '/default-avatar.png'} alt={u.name} className="mhub-avatar-circle" />
+                        </div>
+                        
+                        <div className="mhub-content">
+                            <h3 className="mhub-name">{u.name}</h3>
+                            <p className="mhub-role">{u.role || 'UI / UX Designer'}</p>
                         </div>
 
-                        {/* Name & Role */}
-                        <h3 className="mhub-name">{u.name}</h3>
-                        <p className="mhub-role-mid">{u.role || 'Member'}</p>
-
-                        {/* Social Links */}
-                        <div className="mhub-socials">
-                            <a href="#" className="mhub-social-icon"><Github size={20} /></a>
-                            <a href="#" className="mhub-social-icon"><Linkedin size={20} /></a>
+                        <div className="mhub-social-row">
+                            <a href="#" className="mhub-social-icon"><Instagram size={18} /></a>
+                            <a href={u.githubUrl || "#"} className="mhub-social-icon"><Github size={18} /></a>
+                            <a href={u.linkedinUrl || "#"} className="mhub-social-icon"><Linkedin size={18} /></a>
                         </div>
 
-                        {/* Divider */}
-                        <div className="mhub-card-divider" />
-
-                        {/* Action Buttons */}
-                        <div className="mhub-actions">
-                            <button 
-                                className="mhub-btn-connect"
-                                onClick={() => handleConnect(u.name)}
-                            >
+                        <div className="mhub-actions-row">
+                            <button className="mhub-btn-ghost" onClick={() => handleConnect(u.name)}>
                                 Connect
                             </button>
-                            <button 
-                                className="mhub-btn-exchange"
-                                onClick={() => handleExchange(u)}
-                            >
+                            <button className="mhub-btn-solid" onClick={() => handleExchange(u)}>
                                 Exchange
                             </button>
                         </div>
@@ -157,30 +168,45 @@ export default function Explore() {
                         </div>
 
                         <div className="ex-modal-body">
-                            <div className="ex-input-row">
-                                <div className="ex-input-group">
-                                    <label>Credits to Offer</label>
-                                    <div className="ex-input-wrapper">
-                                        <Zap size={16} className="ex-zap-icon" />
+                            <div className="xh-form">
+                                <div className="xh-input-group">
+                                    <label>Topic of Interest</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. Advanced UI Design" 
+                                        value={exchangeTopic}
+                                        onChange={e => setExchangeTopic(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="xh-grid">
+                                    <div className="xh-input-group">
+                                        <label>Credits to Offer</label>
                                         <input 
                                             type="number" 
                                             value={exchangeCredits}
-                                            onChange={e => setExchangeCredits(e.target.value)}
+                                            onChange={e => setExchangeCredits(Number(e.target.value))}
                                         />
                                     </div>
-                                </div>
-                                <div className="ex-input-group">
-                                    <label>Skill Topic</label>
-                                    <div className="ex-input-wrapper">
+                                    <div className="xh-input-group">
+                                        <label>Preferred Date</label>
                                         <input 
-                                            placeholder="e.g. Machine Learning" 
-                                            value={exchangeTopic}
-                                            onChange={e => setExchangeTopic(e.target.value)}
+                                            type="datetime-local" 
+                                            value={exchangeDate}
+                                            onChange={e => setExchangeDate(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                            </div>
+                                
+                                <div className="xh-warning">
+                                    <Zap size={14} />
+                                    <span>Exchange requests are subject to approval.</span>
+                                </div>
 
+                                <button className="xh-submit-btn" onClick={submitExchange}>
+                                    <Send size={16} /> Send Exchange Request
+                                </button>
+                            </div>
                             <div className="ex-pricing-grid">
                                 <div className="ex-price-item">
                                     <span>Platform Fee:</span>
@@ -191,11 +217,6 @@ export default function Explore() {
                                     <strong>{Number(exchangeCredits) + 5} pts</strong>
                                 </div>
                             </div>
-
-                            <button className="ex-submit-btn" onClick={submitExchange}>
-                                <Send size={18} />
-                                Send Request
-                            </button>
                         </div>
                     </div>
                 </div>

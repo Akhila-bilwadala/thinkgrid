@@ -19,7 +19,6 @@ import './Sidebar.css';
 const MAIN_NAV = [
   { id: 'home', icon: <LayoutGrid size={20} />, label: 'Home' },
   { id: 'materials', icon: <BookOpen size={20} />, label: 'Materials' },
-  { id: 'aistudy', icon: <Sparkles size={20} />, label: 'AI Study Tools' },
   { id: 'rooms', icon: <MessageCircle size={20} />, label: 'Discussions Room' },
   { id: 'explore', icon: <Users size={20} />, label: 'Connect' },
   { id: 'labs', icon: <Zap size={20} />, label: 'Active Labs' },

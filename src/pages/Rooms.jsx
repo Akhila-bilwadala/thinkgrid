@@ -65,7 +65,6 @@ export default function Rooms({ currentTab, onEnterRoom }) {
                 setRooms(prev => prev.map(r => 
                     r._id === id ? updatedRoom : r
                 ));
-                if (onEnterRoom) onEnterRoom(updatedRoom);
             }
         } catch (err) {
             console.error('Error toggling room join:', err);

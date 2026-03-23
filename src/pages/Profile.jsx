@@ -39,7 +39,9 @@ export default function Profile() {
         picture: '',
         bgPicture: '',
         handle: '',
-        portfolioUrl: ''
+        portfolioUrl: '',
+        linkedinUrl: '',
+        githubUrl: ''
     });
 
     const [newSkill, setNewSkill] = useState('');
@@ -55,6 +57,8 @@ export default function Profile() {
                     experience: data.experience || [],
                     achievements: data.achievements || [],
                     portfolioUrl: data.portfolioUrl || '',
+                    linkedinUrl: data.linkedinUrl || '',
+                    githubUrl: data.githubUrl || '',
                     bgPicture: data.bgPicture || ''
                 });
             } catch (err) {
@@ -253,11 +257,23 @@ export default function Profile() {
                                 )}
 
                                 {isEditing && (
-                                    <div className="edit-portfolio-row" style={{ marginTop: '12px' }}>
+                                    <div className="edit-portfolio-row" style={{ marginTop: '12px', display: 'flex', gap: '10px', flexDirection: 'column' }}>
                                         <input 
                                             placeholder="Portfolio URL (https://...)"
                                             value={profile.portfolioUrl}
                                             onChange={e => setProfile({...profile, portfolioUrl: e.target.value})}
+                                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
+                                        />
+                                        <input 
+                                            placeholder="LinkedIn Profile URL"
+                                            value={profile.linkedinUrl}
+                                            onChange={e => setProfile({...profile, linkedinUrl: e.target.value})}
+                                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
+                                        />
+                                        <input 
+                                            placeholder="GitHub Profile URL"
+                                            value={profile.githubUrl}
+                                            onChange={e => setProfile({...profile, githubUrl: e.target.value})}
                                             style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
                                         />
                                     </div>

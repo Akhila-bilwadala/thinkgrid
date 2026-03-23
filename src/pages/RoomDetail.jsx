@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
     ArrowLeft, MessageSquare, ThumbsUp, Send, Plus, X, 
     Search, Pin, Paperclip, Share2, MoreVertical, 
-    CheckCircle2, AlertCircle, Zap, Bug, Tag, LogOut
+    CheckCircle2, AlertCircle, Zap, Bug, Tag, LogOut,
+    MoreHorizontal, ChevronUp, ChevronDown, Award
 } from 'lucide-react';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -228,44 +229,54 @@ export default function RoomDetail({ room, onBack }) {
             <div key={post._id} className={`rd-post-item ${post.isPinned ? 'pinned' : ''}`}>
               {post.isPinned && <div className="rd-pinned-label"><Pin size={10} /> Pinned by Moderator</div>}
               
-              <div className="rd-post-main">
-                <div className="rd-post-sidebar">
-                  <div className="rd-author-square">{getInitials(post.authorName)}</div>
-                  <div className="rd-vote-stack">
-                     <button 
-                        className={`rd-vote-btn ${isLiked ? 'active' : ''}`}
-                        onClick={() => handleToggleLike(post._id)}
-                     >
-                        <ThumbsUp size={16} />
-                     </button>
-                     <span className="rd-vote-count">{post.likedBy?.length || 0}</span>
-                  </div>
+              {/* Header */}
+              <div className="rd-post-head">
+                <div className="rd-post-author-info">
+                  <div className="rd-author-avatar">{getInitials(post.authorName)}</div>
+                  <span className="rd-author-name">s/{post.authorName?.replace(/\s+/g, '').toLowerCase() || 'thinker'}</span>
+                  <span className="rd-dot">•</span>
+                  <span className="rd-post-time">{timeAgo(post.createdAt)}</span>
                 </div>
+                <div className="rd-post-head-actions">
+                  <button className="rd-follow-btn">Follow <Plus size={12} style={{marginLeft: 2}}/></button>
+                  <button className="rd-more-btn"><MoreHorizontal size={16}/></button>
+                </div>
+              </div>
 
-                <div className="rd-post-content">
-                  <div className="rd-post-meta">
-                    <span className="rd-author-full">{post.authorName}</span>
-                    <span className="rd-dot">•</span>
-                    <span className="rd-post-date">{timeAgo(post.createdAt)}</span>
-                    <div className="rd-post-badge" style={{ background: tagInfo.bg, color: tagInfo.color }}>
-                       {tagInfo.icon}
-                       {tagInfo.label}
-                    </div>
-                  </div>
+              {/* Body */}
+              <div className="rd-post-body">
+                <div className="rd-post-text-content">
+                  {post.title && <h2 className="rd-post-title">{post.title}</h2>}
+                  <p className="rd-post-text">{post.text}</p>
+                </div>
+                {/* Optional image mock */}
+                <div className="rd-post-image-box">
+                  <div className="rd-post-img-placeholder"></div>
+                </div>
+              </div>
 
-                  {post.title && <h2 className="rd-post-heading">{post.title}</h2>}
-                  <p className="rd-post-body-text">{post.text}</p>
+              {/* Footer Actions */}
+              <div className="rd-post-foot">
+                <div className="rd-action-pill vote-pill">
+                  <button className={`rd-vote-up ${isLiked ? 'active' : ''}`} onClick={() => handleToggleLike(post._id)}>
+                     <ChevronUp size={18} />
+                  </button>
+                  <span className="rd-vote-count">{post.likedBy?.length || 0}</span>
+                  <button className="rd-vote-down"><ChevronDown size={18} /></button>
+                </div>
+                
+                <button className="rd-action-pill" onClick={() => toggleReplies(post._id)}>
+                  <MessageSquare size={16} /> <span className="rd-action-count">{post.replies?.length || 0}</span>
+                </button>
+                
+                <button className="rd-action-pill">
+                  Share <Share2 size={14} style={{marginLeft: 4}}/>
+                </button>
 
-                  <div className="rd-post-foot">
-                    <button className="rd-foot-link" onClick={() => toggleReplies(post._id)}>
-                      <MessageSquare size={14} /> {post.replies?.length || 0} Comments
-                    </button>
-                    <button className="rd-foot-link" onClick={() => { setReplyingTo(post._id); setOpenReplies(p => ({...p, [post._id]: true})); }}>
-                      Help / Reply
-                    </button>
-                    <button className="rd-foot-link"><Share2 size={14} /> Share</button>
-                    <button className="rd-more-btn"><MoreVertical size={16} /></button>
-                  </div>
+                <button className="rd-action-icon" onClick={() => { setReplyingTo(post._id); setOpenReplies(p => ({...p, [post._id]: true})); }}>
+                  <Award size={16} />
+                </button>
+              </div>
 
                   {/* 🧵 THREADED REPLIES */}
                   {openReplies[post._id] && (
@@ -318,8 +329,6 @@ export default function RoomDetail({ room, onBack }) {
                       )}
                     </div>
                   )}
-                </div>
-              </div>
             </div>
           );
         }) : (

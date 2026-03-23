@@ -10,7 +10,6 @@ import Activity from './pages/Activity';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RoomDetail from './pages/RoomDetail';
-import AIStudyTools from './pages/AIStudyTools';
 import Footer from './components/layout/Footer';
 import './pages/pages.css';
 
@@ -61,7 +60,6 @@ function App() {
         }
         return <Rooms currentTab={tab} onEnterRoom={navigateToRoom} />;
       case 'materials': return <Materials />;
-      case 'aistudy': return <AIStudyTools />;
       case 'explore': return <Explore />;
       case 'labs': return <Labs />;
       case 'activity': return <Activity onEnterRoom={navigateToRoom} />;
