@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, MessageSquare, Trophy, Briefcase, 
   BookOpen, Target, MoreHorizontal, TrendingUp, 
-  User, Layers, Share2, Plus, Bell, Fullscreen
+  User, Layers, Share2, Plus, Bell, Fullscreen,
+  Code, Palette, FlaskConical
 } from 'lucide-react';
 import './Activity.css';
 import { getRooms } from '../api/rooms';
@@ -165,24 +166,36 @@ export default function Activity({ onEnterRoom }) {
                     </div>
                     
                     <div className="ana-list">
-                        {activeTab === 'Rooms' && joinedRooms.map((room, i) => (
-                            <div key={room._id} className="ana-list-item">
-                                <div className="item-main">
-                                    <div className="item-icon coral"><MessageSquare size={16}/></div>
-                                    <div className="item-info">
-                                        <h4>{room.name}</h4>
-                                        <p>Discussion Room</p>
+                        {activeTab === 'Rooms' && joinedRooms.map((room, i) => {
+                            const text = (room.name + ' ' + (room.description || '')).toLowerCase();
+                            let Icon = MessageSquare;
+                            if (text.includes('dev') || text.includes('tech') || text.includes('code')) Icon = Code;
+                            else if (text.includes('design') || text.includes('ui') || text.includes('art')) Icon = Palette;
+                            else if (text.includes('science') || text.includes('math') || text.includes('physics')) Icon = FlaskConical;
+
+                            return (
+                                <div key={room._id} className="ana-list-item">
+                                    <div className="item-main">
+                                        <div className="item-icon-logo">
+                                            <Icon size={18} color="white" />
+                                        </div>
+                                        <div className="item-info">
+                                            <h4>{room.name}</h4>
+                                            <p>Discussion Room</p>
+                                        </div>
+                                    </div>
+                                    <div className="item-actions">
+                                        <button className="ana-btn-enter" onClick={() => onEnterRoom(room._id)}>Enter Room</button>
                                     </div>
                                 </div>
-                                <div className="item-actions">
-                                    <button className="ana-btn-enter" onClick={() => onEnterRoom(room._id)}>Enter Room</button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {activeTab === 'Materials' && savedNotes.map((note, i) => (
                             <div key={note._id} className="ana-list-item">
                                 <div className="item-main">
-                                    <div className="item-icon navy"><BookOpen size={16}/></div>
+                                    <div className="item-icon-logo">
+                                        <Palette size={18} color="white" />
+                                    </div>
                                     <div className="item-info">
                                         <h4>{note.title}</h4>
                                         <p>Saved Document</p>
@@ -196,7 +209,9 @@ export default function Activity({ onEnterRoom }) {
                         {activeTab === 'Projects' && joinedLabs.map((lab, i) => (
                             <div key={lab._id} className="ana-list-item">
                                 <div className="item-main">
-                                    <div className="item-icon green"><Briefcase size={16}/></div>
+                                    <div className="item-icon-logo">
+                                        <Code size={18} color="white" />
+                                    </div>
                                     <div className="item-info">
                                         <h4>{lab.title || lab.name}</h4>
                                         <p>Collaboration Project</p>

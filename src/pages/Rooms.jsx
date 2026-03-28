@@ -174,11 +174,11 @@ export default function Rooms({ currentTab, onEnterRoom }) {
                     return (
                         <div key={r._id} className="room-card">
                             <div className="room-card-head">
-                                <div className="room-card-icon-wrap" data-category={cat}>
-                                    {cat === 'Technology' && <Code size={20} />}
-                                    {cat === 'Design' && <Palette size={20} />}
-                                    {cat === 'Science' && <FlaskConical size={20} />}
-                                    {cat === 'General' && <MessageSquare size={20} />}
+                                <div className="room-card-icon-logo">
+                                    {cat === 'Technology' && <Code size={24} color="white" />}
+                                    {cat === 'Design' && <Palette size={24} color="white" />}
+                                    {cat === 'Science' && <FlaskConical size={24} color="white" />}
+                                    {cat === 'General' && <MessageSquare size={24} color="white" />}
                                 </div>
                                 <div className="room-card-badges">
                                     <span className="room-cat-badge">{cat}</span>
