@@ -89,25 +89,37 @@ export default function Activity({ onEnterRoom }) {
             <div className="ana-summary-row">
                 <div className="ana-card ana-summary-main">
                     <div className="ana-card-head">
-                        <span className="ana-lbl" style={{ color: 'rgba(255,255,255,0.8)' }}>Total Elite Points</span>
-                        <MoreHorizontal size={16} />
-                    </div>
-                    <div className="ana-points-amount-vibrant">
-                        {points?.toLocaleString()} <span className="ana-points-unit-vibrant">pts</span>
+                        <span className="ana-lbl summary-lbl">Total Elite Points</span>
+                        <MoreHorizontal size={18} className="header-icon" />
                     </div>
                     
-                    <div className="ana-breakdown" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '15px' }}>
+                    <div className="ana-points-amount-vibrant">
+                        {points?.toLocaleString() || 0}
+                        <span className="ana-points-unit-vibrant">pts</span>
+                    </div>
+
+                    <div className="ana-progress-container">
+                        <div className="ana-progress-bar">
+                            <div className="ana-progress-fill" style={{ width: `${(points % 100)}%` }}></div>
+                        </div>
+                        <div className="ana-progress-lbl">
+                            <span>Next Milestone</span>
+                            <span>{points + (100 - (points % 100))} pts</span>
+                        </div>
+                    </div>
+                    
+                    <div className="ana-breakdown">
                         <div className="bk-item">
-                            <span className="bk-lbl" style={{ color: 'rgba(255,255,255,0.7)' }}>Rooms</span>
-                            <span className="bk-val" style={{ color: 'white' }}>{stats.rooms}</span>
+                            <span className="bk-lbl">Rooms</span>
+                            <span className="bk-val">{stats.rooms}</span>
                         </div>
                         <div className="bk-item">
-                            <span className="bk-lbl" style={{ color: 'rgba(255,255,255,0.7)' }}>Labs</span>
-                            <span className="bk-val" style={{ color: 'white' }}>{stats.projects}</span>
+                            <span className="bk-lbl">Labs</span>
+                            <span className="bk-val">{stats.projects}</span>
                         </div>
                         <div className="bk-item">
-                            <span className="bk-lbl" style={{ color: 'rgba(255,255,255,0.7)' }}>Notes</span>
-                            <span className="bk-val" style={{ color: 'white' }}>{stats.notes}</span>
+                            <span className="bk-lbl">Notes</span>
+                            <span className="bk-val">{stats.notes}</span>
                         </div>
                     </div>
                 </div>

@@ -97,7 +97,7 @@
 .ana-card {
     background: white;
     border-radius: var(--ana-radius);
-    padding: 20px;
+    padding: 24px;
     box-shadow: var(--ana-shadow);
 }
 
@@ -105,6 +105,9 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--ana-soft);
+}
+.summary-lbl {
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .ana-card-head {
@@ -117,7 +120,7 @@
 /* ── Summary Row ── */
 .ana-summary-row {
     display: grid;
-    grid-template-columns: 1.25fr 2.25fr;
+    grid-template-columns: 1fr 2.5fr;
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -125,26 +128,59 @@
 .ana-summary-main {
     background: var(--ana-gradient);
     color: white;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .ana-points-amount-vibrant {
     font-size: 2.2rem;
     font-weight: 800;
     color: white;
-    margin: 10px 0 20px;
+    margin: 12px 0 16px;
     letter-spacing: -1px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
 }
 
 .ana-points-unit-vibrant {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
     opacity: 0.8;
+}
+.ana-progress-container {
+    margin-bottom: 20px;
+}
+.ana-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.ana-progress-fill {
+    height: 100%;
+    background: white;
+    box-shadow: 0 0 10px white;
+}
+.ana-progress-lbl {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
 }
 
 .ana-breakdown {
     display: flex;
     justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 12px;
 }
+.bk-val { color: white !important }
+.bk-lbl { color: rgba(255, 255, 255, 0.7) !important }
 
 .bk-item { display: flex; flex-direction: column; gap: 4px }
 .bk-lbl { font-size: 0.75rem; font-weight: 500 }
