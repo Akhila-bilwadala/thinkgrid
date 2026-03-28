@@ -89,64 +89,50 @@ export default function Activity({ onEnterRoom }) {
             <div className="ana-summary-row">
                 <div className="ana-card ana-summary-main">
                     <div className="ana-card-head">
-                        <span className="ana-lbl">Total Elite Points</span>
+                        <span className="ana-lbl" style={{ color: 'rgba(255,255,255,0.8)' }}>Total Elite Points</span>
                         <MoreHorizontal size={16} />
                     </div>
-                    <div className="ana-val-large">{(points / 1000).toFixed(4)}K</div>
-                    <div className="ana-breakdown">
+                    <div className="ana-points-amount-vibrant">
+                        {points?.toLocaleString()} <span className="ana-points-unit-vibrant">pts</span>
+                    </div>
+                    
+                    <div className="ana-breakdown" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '15px' }}>
                         <div className="bk-item">
-                           <span className="bk-lbl">Rooms</span>
-                           <span className="bk-val">%{Math.round((stats.rooms / (stats.rooms + stats.projects + stats.notes || 1)) * 100)}</span>
+                            <span className="bk-lbl" style={{ color: 'rgba(255,255,255,0.7)' }}>Rooms</span>
+                            <span className="bk-val" style={{ color: 'white' }}>{stats.rooms}</span>
                         </div>
                         <div className="bk-item">
-                           <span className="bk-lbl">Labs</span>
-                           <span className="bk-val">%{Math.round((stats.projects / (stats.rooms + stats.projects + stats.notes || 1)) * 100)}</span>
+                            <span className="bk-lbl" style={{ color: 'rgba(255,255,255,0.7)' }}>Labs</span>
+                            <span className="bk-val" style={{ color: 'white' }}>{stats.projects}</span>
                         </div>
                         <div className="bk-item">
-                           <span className="bk-lbl">Notes</span>
-                           <span className="bk-val">%{Math.round((stats.notes / (stats.rooms + stats.projects + stats.notes || 1)) * 100)}</span>
+                            <span className="bk-lbl" style={{ color: 'rgba(255,255,255,0.7)' }}>Notes</span>
+                            <span className="bk-val" style={{ color: 'white' }}>{stats.notes}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="ana-card ana-donut-card">
+                <div className="ana-card ana-tech-card">
                     <div className="ana-card-head">
-                        <span className="ana-lbl">Activity Mix</span>
-                        <MoreHorizontal size={16} />
+                        <span className="ana-lbl">Daily Tech Updates</span>
+                        <TrendingUp size={16} />
                     </div>
-                    <div className="ana-donut-content">
-                        <div className="ana-donut-svg">
-                            <svg viewBox="0 0 36 36" className="donut">
-                                <circle className="donut-hole" cx="18" cy="18" r="15.9155" fill="#fff"></circle>
-                                <circle className="donut-ring" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f1f1f1" strokeWidth="3"></circle>
-                                <circle className="donut-segment" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#F27A54" strokeWidth="3" strokeDasharray="70 30" strokeDashoffset="25"></circle>
-                                <circle className="donut-segment" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#1A1A2E" strokeWidth="3" strokeDasharray="20 80" strokeDashoffset="55"></circle>
-                            </svg>
-                            <div className="donut-center">
-                                <span className="donut-val">{Math.round((stats.rooms + stats.projects + stats.notes) / 10)}k</span>
+                    <div className="ana-tech-list-wide">
+                        {[
+                            { title: "React 19 Stable", desc: "Improved Actions, Server Components, and the new React Compiler." },
+                            { title: "GPT-4o & GPT-5", desc: "OpenAI announces multi-modal improvements and next-gen reasoning." },
+                            { title: "AlphaFold 3", desc: "Scientific breakthrough in predicting molecular interactions." },
+                            { title: "Vision Pro 2", desc: "Next-gen immersive displays with significantly reduced weight." },
+                            { title: "Tailwind 4.0", desc: "A ground-up rewrite for maximum performance and zero configuration." }
+                        ].map((item, i) => (
+                            <div key={i} className="tech-item-wide">
+                                <div className="tech-dot"></div>
+                                <div className="tech-info">
+                                    <div className="tech-title">{item.title}</div>
+                                    <div className="tech-desc">{item.desc}</div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="ana-donut-legend">
-                            <div className="lg-item"><span className="lg-dot coral"></span> Active %80</div>
-                            <div className="lg-item"><span className="lg-dot navy"></span> Passive %20</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="ana-side-stats">
-                    <div className="ana-card ana-mini">
-                        <div className="mini-top">
-                            <span className="mini-val">{stats.rooms}</span>
-                            <span className="mini-lbl">Rooms</span>
-                        </div>
-                        <div className="mini-bar"><div className="bar-fill" style={{width: '70%', background: '#F27A54'}}></div></div>
-                    </div>
-                    <div className="ana-card ana-mini">
-                        <div className="mini-top">
-                            <span className="mini-val">{stats.notes}</span>
-                            <span className="mini-lbl">Materials</span>
-                        </div>
-                        <div className="mini-bar"><div className="bar-fill" style={{width: '45%', background: '#1A1A2E'}}></div></div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -176,10 +162,9 @@ export default function Activity({ onEnterRoom }) {
                                         <p>Discussion Room</p>
                                     </div>
                                 </div>
-                                <span className="item-cat">Global</span>
-                                <span className="item-stat">{room.members?.length || 0} Members</span>
-                                <div className="item-growth pos">+{Math.floor(Math.random() * 10)}%</div>
-                                <MoreHorizontal size={16} className="item-more" />
+                                <div className="item-actions">
+                                    <button className="ana-btn-enter" onClick={() => onEnterRoom(room._id)}>Enter Room</button>
+                                </div>
                             </div>
                         ))}
                         {activeTab === 'Materials' && savedNotes.map((note, i) => (
@@ -191,10 +176,9 @@ export default function Activity({ onEnterRoom }) {
                                         <p>Saved Document</p>
                                     </div>
                                 </div>
-                                <span className="item-cat">Material</span>
-                                <span className="item-stat">Saved</span>
-                                <div className="item-growth pos">+5%</div>
-                                <MoreHorizontal size={16} className="item-more" />
+                                <div className="item-actions">
+                                    <button className="ana-btn-enter outline">Open Note</button>
+                                </div>
                             </div>
                         ))}
                         {activeTab === 'Projects' && joinedLabs.map((lab, i) => (
@@ -206,10 +190,9 @@ export default function Activity({ onEnterRoom }) {
                                         <p>Collaboration Project</p>
                                     </div>
                                 </div>
-                                <span className="item-cat">Project</span>
-                                <span className="item-stat">Active</span>
-                                <div className="item-growth pos">+12%</div>
-                                <MoreHorizontal size={16} className="item-more" />
+                                <div className="item-actions">
+                                    <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>Enter Project</button>
+                                </div>
                             </div>
                         ))}
                         {activeTab === 'Skills' && (

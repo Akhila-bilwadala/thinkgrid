@@ -81,7 +81,6 @@ export default function Labs() {
             setLabs(data.length > 0 ? data : FALLBACK_LABS);
         } catch (err) {
             console.error('Error fetching labs:', err);
-            setLabs(FALLBACK_LABS);
         } finally {
             setLoading(false);
         }
@@ -222,8 +221,17 @@ export default function Labs() {
                             className={`lab-join-btn ${lab.status.toLowerCase()}`}
                             onClick={() => handleActionClick(lab)}
                         >
-                            {lab.status === 'OPEN' ? 'Join Project' : 'View Repository'}
-                            <ChevronRight size={16} />
+                            {lab.status === 'OPEN' ? (
+                                <>
+                                    <span className="btn-dot">●</span>
+                                    JOIN
+                                </>
+                            ) : (
+                                <>
+                                    View Repository
+                                    <ChevronRight size={16} />
+                                </>
+                            )}
                         </button>
                     </div>
                 ))}

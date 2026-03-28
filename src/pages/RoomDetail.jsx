@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
     ArrowLeft, MessageSquare, ThumbsUp, Send, Plus, X, 
     Search, Pin, Paperclip, Share2, MoreVertical, 
@@ -10,10 +10,10 @@ import { useAuth } from '../context/AuthContext';
 import './RoomDetail.css';
 
 const TAG_CONFIG = {
-  Discussion:     { label: 'Discussion',   color: '#6366f1', bg: '#EEF2FF', icon: <MessageSquare size={14} /> },
-  'Tech Update': { label: 'Tech Update',  color: '#8b5cf6', bg: '#F5F3FF', icon: <Zap size={14} /> },
-  'Error Help':   { label: 'Error Help',   color: '#f43f5e', bg: '#FFF1F2', icon: <Bug size={14} /> },
-  Question:       { label: 'Question',     color: '#f59e0b', bg: '#FFFBEB', icon: <AlertCircle size={14} /> },
+  Discussion:     { label: 'Discussion',   color: '#FF8C00', bg: '#FFF7ED', icon: <MessageSquare size={14} /> },
+  'Tech Update': { label: 'Tech Update',  color: '#FF2D55', bg: '#FFF1F2', icon: <Zap size={14} /> },
+  'Error Help':   { label: 'Error Help',   color: '#7F00FF', bg: '#F5F3FF', icon: <Bug size={14} /> },
+  Question:       { label: 'Question',     color: '#EC4899', bg: '#FDF2F8', icon: <AlertCircle size={14} /> },
 };
 
 export default function RoomDetail({ room, onBack }) {
@@ -27,11 +27,23 @@ export default function RoomDetail({ room, onBack }) {
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostText, setNewPostText] = useState('');
   const [newPostTag, setNewPostTag] = useState('Discussion');
+  const [customTags, setCustomTags] = useState([]);
   
   // Reply State
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [openReplies, setOpenReplies] = useState({});
+  
+  // Refs
+  const fileInputRef = useRef(null);
+  const [attachedFile, setAttachedFile] = useState(null);
+
+  // Toast State
+  const [toastMsg, setToastMsg] = useState('');
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3000);
+  };
 
   const fetchPosts = async (search = '') => {
     try {
@@ -64,6 +76,7 @@ export default function RoomDetail({ room, onBack }) {
       fetchPosts(searchQuery);
     } catch (err) {
       console.error('Failed to create post:', err);
+      alert('Failed to create post: ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -137,9 +150,10 @@ export default function RoomDetail({ room, onBack }) {
             </div>
           </div>
           <div className="rd-filter-tabs">
-            <button className="rd-tab active">All Posts</button>
-            <button className="rd-tab">Pinned</button>
+            <button className="rd-tab active" onClick={() => showToast('Showing all posts')}>All Posts</button>
+            <button className="rd-tab" onClick={() => showToast('Pinned posts filter coming soon!')}>Pinned</button>
           </div>
+
         </div>
 
         <div className="rd-ribbon-right">
@@ -192,7 +206,7 @@ export default function RoomDetail({ room, onBack }) {
               <div className="rd-input-group">
                 <label>Category</label>
                 <div className="rd-picker-row">
-                  {Object.entries(TAG_CONFIG).map(([key, config]) => (
+                  {[...Object.entries(TAG_CONFIG), ...customTags.map(t => [t, { label: t }])].map(([key, config]) => (
                     <button
                       key={key}
                       onClick={() => setNewPostTag(key)}
@@ -204,8 +218,24 @@ export default function RoomDetail({ room, onBack }) {
                 </div>
               </div>
               <div className="rd-tool-strip">
-                 <button className="rd-tool-btn"><Paperclip size={14} /> Attach File</button>
-                 <button className="rd-tool-btn"><Tag size={14} /> Add Tags</button>
+                 <button className="rd-tool-btn" onClick={() => fileInputRef.current?.click()}>
+                   <Paperclip size={14} /> {attachedFile ? attachedFile.name : 'Attach File'}
+                 </button>
+                 <button className="rd-tool-btn" onClick={() => {
+                   const t = prompt('Add a custom tag:');
+                   if (t && !customTags.includes(t)) {
+                     setCustomTags(prev => [...prev, t]);
+                     setNewPostTag(t);
+                   }
+                 }}>
+                   <Tag size={14} /> Add Tags
+                 </button>
+                 <input 
+                   type="file" 
+                   ref={fileInputRef} 
+                   style={{ display: 'none' }} 
+                   onChange={(e) => setAttachedFile(e.target.files[0])}
+                 />
               </div>
             </div>
             
@@ -218,8 +248,10 @@ export default function RoomDetail({ room, onBack }) {
           <div className="rd-feed-body">
             {loading ? (
               <div className="rd-state-msg">
-                 <div className="rd-spinner"></div>
-                 <p>Syncing discussion threads...</p>
+                <div className="elite-loader-wrap" style={{ padding: '20px 0' }}>
+                  <div className="elite-spinner" style={{ width: '36px', height: '36px', borderWidth: '3px' }}></div>
+                  <div className="elite-loader-text" style={{ fontSize: '0.8rem' }}>Syncing threads...</div>
+                </div>
               </div>
             ) : posts.length > 0 ? posts.map(post => {
           const isLiked = post.likedBy?.includes(user._id);
@@ -238,9 +270,10 @@ export default function RoomDetail({ room, onBack }) {
                   <span className="rd-post-time">{timeAgo(post.createdAt)}</span>
                 </div>
                 <div className="rd-post-head-actions">
-                  <button className="rd-follow-btn">Follow <Plus size={12} style={{marginLeft: 2}}/></button>
-                  <button className="rd-more-btn"><MoreHorizontal size={16}/></button>
+                  <button className="rd-follow-btn" onClick={() => showToast(`Following ${post.authorName || 'user'}...`)}>Follow <Plus size={12} style={{marginLeft: 2}}/></button>
+                  <button className="rd-more-btn" onClick={() => showToast('More options coming soon!')}><MoreHorizontal size={16}/></button>
                 </div>
+
               </div>
 
               {/* Body */}
@@ -262,16 +295,18 @@ export default function RoomDetail({ room, onBack }) {
                      <ChevronUp size={18} />
                   </button>
                   <span className="rd-vote-count">{post.likedBy?.length || 0}</span>
-                  <button className="rd-vote-down"><ChevronDown size={18} /></button>
+                  <button className="rd-vote-down" onClick={() => showToast('Downvoting is disabled for this room.')}><ChevronDown size={18} /></button>
                 </div>
+
                 
                 <button className="rd-action-pill" onClick={() => toggleReplies(post._id)}>
                   <MessageSquare size={16} /> <span className="rd-action-count">{post.replies?.length || 0}</span>
                 </button>
                 
-                <button className="rd-action-pill">
+                <button className="rd-action-pill" onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('Link copied to clipboard!'); }}>
                   Share <Share2 size={14} style={{marginLeft: 4}}/>
                 </button>
+
 
                 <button className="rd-action-icon" onClick={() => { setReplyingTo(post._id); setOpenReplies(p => ({...p, [post._id]: true})); }}>
                   <Award size={16} />
@@ -299,7 +334,7 @@ export default function RoomDetail({ room, onBack }) {
                                  >
                                     <ThumbsUp size={12} /> {reply.likedBy?.length || 0}
                                  </button>
-                                 <button className="rd-reply-util">Reply</button>
+                                 <button className="rd-reply-util" onClick={() => showToast('Nested replies coming soon!')}>Reply</button>
                               </div>
                             </div>
                           </div>
@@ -337,12 +372,18 @@ export default function RoomDetail({ room, onBack }) {
                 <MessageSquare size={48} />
              </div>
              <h2>No discussions found</h2>
-             <p>Be the first to share an update, ask for help, or start a talk here!</p>
           </div>
         )}
       </div>
-     )}
+    )}
     </div>
-   </div>
+    
+    {toastMsg && (
+      <div className="rd-toast">
+        {toastMsg}
+      </div>
+    )}
+  </div>
   );
 }
+

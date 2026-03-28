@@ -63,7 +63,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: var(--labs-gradient);
+    background: #000000;
     color: #FFFFFF;
     border: none;
     border-radius: 14px;
@@ -293,14 +293,22 @@
 }
 
 .lab-join-btn.open {
-    background: var(--labs-gradient);
-    color: #FFFFFF;
-    border: none;
+    background: #FFF7ED;
+    color: #FF8C00;
+    border: 1.5px solid #FFEDD5;
+    border-radius: 99px;
+    justify-content: center;
 }
 
 .lab-join-btn.open:hover {
-    opacity: 0.9;
+    background: #FFEDD5;
     transform: translateY(-1px);
+}
+
+.btn-dot {
+    margin-right: 6px;
+    font-size: 0.8rem;
+    line-height: 1;
 }
 
 .lab-deadline-row {
@@ -495,7 +503,7 @@
 
 .btn-submit {
     padding: 12px 28px;
-    background: var(--labs-gradient);
+    background: #000000;
     color: #FFFFFF;
     border: none;
     border-radius: 12px;
@@ -510,16 +518,4 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 45, 85, 0.2);
 }
-
-/* Additional changes based on instruction */
-.labs-toolbar-btn { /* Assuming this is the "create button" */
-    background: var(--labs-gradient);
-}
-
-.lab-join-btn.open { /* Assuming this is the "join button" */
-    background: var(--labs-gradient);
-}
-
-.lab-card-icon { /* Assuming this is the "icon box" */
-    color: #FF2D55;
-}
+

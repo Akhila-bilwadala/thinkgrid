@@ -117,7 +117,7 @@
 /* ── Summary Row ── */
 .ana-summary-row {
     display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr;
+    grid-template-columns: 1.25fr 2.25fr;
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -127,95 +127,70 @@
     color: white;
 }
 
-.ana-summary-main .ana-lbl { color: rgba(255,255,255,0.8) }
-
-.ana-val-large {
+.ana-points-amount-vibrant {
     font-size: 2.2rem;
     font-weight: 800;
+    color: white;
     margin: 10px 0 20px;
+    letter-spacing: -1px;
+}
+
+.ana-points-unit-vibrant {
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.8;
 }
 
 .ana-breakdown {
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid rgba(255,255,255,0.2);
-    padding-top: 15px;
 }
 
 .bk-item { display: flex; flex-direction: column; gap: 4px }
-.bk-lbl { font-size: 0.75rem; opacity: 0.7; font-weight: 500 }
+.bk-lbl { font-size: 0.75rem; font-weight: 500 }
 .bk-val { font-size: 1.1rem; font-weight: 700 }
 
-/* Donut */
-.ana-donut-content {
+/* Tech Updates Wide */
+.ana-tech-list-wide {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    margin-top: 10px;
+}
+
+.tech-item-wide {
     display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.ana-donut-svg {
-    position: relative;
-    width: 100px;
-    height: 100px;
-}
-
-.donut-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-
-.donut-val { font-size: 1.2rem; font-weight: 800 }
-
-.ana-donut-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.lg-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
-.lg-dot { width: 8px; height: 8px; border-radius: 50% }
-.lg-dot.coral { background: var(--ana-coral) }
-.lg-dot.navy { background: var(--ana-navy) }
-
-/* Mini Stats */
-.ana-side-stats {
-    display: flex;
-    flex-direction: column;
     gap: 12px;
+    align-items: flex-start;
 }
 
-.ana-mini {
-    padding: 15px 20px;
-}
-
-.mini-top {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 8px;
-}
-
-.mini-val { font-size: 1.2rem; font-weight: 800 }
-.mini-lbl { font-size: 0.85rem; color: var(--ana-soft); font-weight: 600 }
-
-.mini-bar {
+.tech-dot {
+    width: 6px;
     height: 6px;
-    background: #f1f1f1;
-    border-radius: 100px;
-    overflow: hidden;
+    background: var(--ana-coral);
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(255, 45, 85, 0.3);
 }
 
-.bar-fill { height: 100%; border-radius: 100px }
+.tech-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tech-title {
+    font-size: 0.9rem;
+    font-weight: 750;
+    color: var(--ana-text);
+}
+
+.tech-desc {
+    font-size: 0.75rem;
+    color: var(--ana-soft);
+    line-height: 1.4;
+}
 
 /* ── Bottom Grid ── */
 .ana-bottom-grid {
@@ -263,15 +238,54 @@
 }
 
 .ana-list-item {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 0.5fr auto;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 12px 10px;
-    border-radius: 12px;
-    transition: background 0.2s;
+    padding: 16px 20px;
+    border-radius: 16px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    transition: all 0.2s;
+    margin-bottom: 4px;
 }
 
-.ana-list-item:hover { background: #FAFAFA }
+.ana-list-item:hover {
+    background: #FAFAFA;
+    border-color: rgba(255, 45, 85, 0.1);
+    transform: translateX(4px);
+}
+
+.ana-btn-enter {
+    padding: 8px 24px;
+    background: #000000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: -0.01em;
+    box-shadow: 0 4px 12px rgba(255, 45, 85, 0.15);
+}
+
+.ana-btn-enter:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 45, 85, 0.25);
+}
+
+.ana-btn-enter.outline {
+    background: transparent;
+    border: 1.5px solid var(--ana-coral);
+    color: var(--ana-coral);
+    box-shadow: none;
+}
+
+.ana-btn-enter.outline:hover {
+    background: var(--ana-coral);
+    color: white;
+}
 
 .item-main {
     display: flex;

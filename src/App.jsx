@@ -84,8 +84,11 @@ function App() {
 
   if (loading) {
     return (
-      <div className="loading-screen" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B0F1A', color: 'white' }}>
-        <div className="loader">ThinkGrid...</div>
+      <div className="loading-screen" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B0F1A' }}>
+        <div className="elite-loader-wrap">
+          <div className="elite-spinner"></div>
+          <div className="elite-loader-text">Initialize ThinkGrid</div>
+        </div>
       </div>
     );
   }

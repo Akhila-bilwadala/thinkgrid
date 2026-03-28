@@ -11,9 +11,10 @@
   max-width: 880px;
   margin: 0 auto;
   padding-bottom: 60px;
-  --rd-accent: #5B5EF4;
-  --rd-accent-soft: #EDEDFF;
-  --rd-accent-glow: rgba(91, 94, 244, 0.15);
+  --rd-accent: #FF2D55;
+  --rd-accent-soft: #FFF1F2;
+  --rd-accent-glow: rgba(255, 45, 85, 0.15);
+  --rd-gradient: linear-gradient(135deg, #FF8C00 0%, #FF2D55 60%, #7F00FF 100%);
   --rd-text-1: #0A0F1E;
   --rd-text-2: #3D4663;
   --rd-text-3: #8E95A9;
@@ -103,7 +104,7 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(145deg, #5B5EF4, #818CF8);
+  background: var(--rd-gradient);
   color: white;
   display: flex;
   align-items: center;
@@ -346,7 +347,7 @@
 .rd-tool-btn:hover { color: var(--rd-accent); }
 
 .rd-submit {
-  background: var(--rd-accent);
+  background: #111827;
   color: white;
   border: none;
   padding: 10px 24px;
@@ -357,7 +358,11 @@
   transition: all 0.25s var(--rd-transition);
   box-shadow: 0 4px 14px var(--rd-accent-glow);
 }
-.rd-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(91, 94, 244, 0.3); }
+.rd-submit:hover { 
+  background: #000000;
+  transform: translateY(-1px); 
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); 
+}
 
 .rd-cancel {
   font-size: 0.82rem;
@@ -402,8 +407,8 @@
 }
 
 .rd-post-item.pinned {
-  border: 1.5px solid rgba(91, 94, 244, 0.12);
-  background: linear-gradient(180deg, rgba(237, 237, 255, 0.3), white);
+  border: 1.5px solid rgba(255, 45, 85, 0.12);
+  background: linear-gradient(180deg, rgba(255, 241, 242, 0.3), white);
 }
 
 .rd-pinned-label {
@@ -439,7 +444,7 @@
   width: 30px;
   height: 30px;
   border-radius: 10px;
-  background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+  background: var(--rd-accent-soft);
   color: var(--rd-accent);
   display: flex;
   align-items: center;
@@ -480,7 +485,7 @@
 }
 .rd-follow-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(91, 94, 244, 0.25);
+  box-shadow: 0 4px 14px var(--rd-accent-glow);
 }
 
 .rd-more-btn {
@@ -613,13 +618,30 @@
 
 /* ═══════════════ THREADED REPLIES ═══════════════ */
 .rd-thread-space {
-  margin-top: 20px;
-  padding-top: 16px;
-  padding-left: 0;
+  margin-top: 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  gap: 16px;
+}
+
+/* ── Toast Notification ── */
+.rd-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 9999;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: fadeUp 0.3s ease forwards;
 }
 
 .rd-reply-item {
@@ -636,7 +658,7 @@
   width: 28px;
   height: 28px;
   border-radius: 10px;
-  background: linear-gradient(145deg, #F0F4FF, #E8ECF8);
+  background: var(--rd-accent-soft);
   color: var(--rd-accent);
   font-size: 0.65rem;
   font-weight: 800;
@@ -654,7 +676,7 @@
   border-radius: 4px 14px 14px 14px;
   transition: background 0.2s;
 }
-.rd-reply-bubble:hover { background: #EEF0F8; }
+.rd-reply-bubble:hover { background: #FDEAF1; }
 
 .rd-reply-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .rd-reply-user { font-size: 0.78rem; font-weight: 700; color: var(--rd-text-1); }
@@ -745,7 +767,7 @@
 }
 .rd-send-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 14px rgba(91, 94, 244, 0.3);
+  box-shadow: 0 4px 14px var(--rd-accent-glow);
 }
 
 .rd-inline-reply-trigger {
@@ -763,7 +785,7 @@
 }
 .rd-inline-reply-trigger:hover {
   background: var(--rd-accent-soft);
-  border-color: rgba(91, 94, 244, 0.15);
+  border-color: var(--rd-accent-glow);
   color: var(--rd-accent);
 }
 
@@ -811,7 +833,7 @@
 .rd-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(91, 94, 244, 0.1);
+  border: 3px solid var(--rd-accent-soft);
   border-top: 3px solid var(--rd-accent);
   border-radius: 50%;
   margin: 0 auto 16px;

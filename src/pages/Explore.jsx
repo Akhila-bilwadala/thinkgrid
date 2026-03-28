@@ -81,7 +81,12 @@ export default function Explore() {
         setTimeout(() => setToast({ show: false, message: '', name: '' }), 3000);
     };
 
-    if (loading) return <div className="loading-state">Finding Elite thinkers...</div>;
+    if (loading) return (
+        <div className="elite-loader-wrap" style={{ height: '50vh' }}>
+            <div className="elite-spinner"></div>
+            <div className="elite-loader-text">Finding Elite Thinkers...</div>
+        </div>
+    );
 
     return (
         <div className="mhub-container">

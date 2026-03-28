@@ -117,8 +117,10 @@ export default function Rooms({ currentTab, onEnterRoom }) {
 
     if (loading) return (
         <div className="rooms-loading-state">
-            <div className="rooms-spinner"></div>
-            <p>Entering Thought Corridors...</p>
+            <div className="elite-loader-wrap">
+                <div className="elite-spinner"></div>
+                <div className="elite-loader-text">Entering Thought Corridors...</div>
+            </div>
         </div>
     );
 

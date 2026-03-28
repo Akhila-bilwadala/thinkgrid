@@ -92,7 +92,7 @@
 }
 
 .room-tab-btn.active {
-    background: var(--r-gradient);
+    background: #000000;
     color: white;
 }
 
@@ -225,18 +225,18 @@
     color: white;
 }
 
-/* Category colors */
+/* Category gradients matching the dashboard theme */
 .room-card-icon-wrap[data-category="Technology"] {
-    background: linear-gradient(145deg, #5B5EF4, #3B82F6);
+    background: var(--r-gradient);
 }
 .room-card-icon-wrap[data-category="Design"] {
-    background: linear-gradient(145deg, #EC4899, #F472B6);
+    background: linear-gradient(135deg, #FF2D55 0%, #BD25F5 100%);
 }
 .room-card-icon-wrap[data-category="Science"] {
-    background: linear-gradient(145deg, #10B981, #34D399);
+    background: linear-gradient(135deg, #FFBD00 0%, #FF8C00 100%);
 }
 .room-card-icon-wrap[data-category="General"] {
-    background: linear-gradient(145deg, #6366F1, #818CF8);
+    background: linear-gradient(135deg, #FF2D55 0%, #FF6B00 100%);
 }
 
 .room-card-badges {
