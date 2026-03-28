@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import React from 'react'
 import './index.css'
 import App from './App.jsx'
+import AdminApp from './pages/AdminApp.jsx'
 import { AuthProvider } from './context/AuthContext'
 
 class ErrorBoundary extends React.Component {
@@ -31,12 +32,18 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+const isAdminRoute = window.location.pathname.startsWith('/admin');
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      {isAdminRoute ? (
+        <AdminApp />
+      ) : (
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      )}
     </ErrorBoundary>
   </StrictMode>,
 )

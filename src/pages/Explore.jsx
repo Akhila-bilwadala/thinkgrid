@@ -40,6 +40,7 @@ export default function Explore() {
 
     const filtered = users.filter(u =>
         u._id !== user?._id &&
+        u.role !== 'admin' &&
         (category === 'All' || u.rank === category || (category === 'Mentor' && u.rank?.includes('Mentor'))) &&
         (u.name.toLowerCase().includes(query.toLowerCase()) || u.role?.toLowerCase().includes(query.toLowerCase()))
     );

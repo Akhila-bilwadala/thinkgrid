@@ -8,6 +8,7 @@ import Explore from './pages/Explore';
 import Labs from './pages/Labs';
 import Activity from './pages/Activity';
 import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
 import Register from './pages/Register';
 import RoomDetail from './pages/RoomDetail';
 import Footer from './components/layout/Footer';
@@ -63,6 +64,7 @@ function App() {
       case 'explore': return <Explore />;
       case 'labs': return <Labs />;
       case 'activity': return <Activity onEnterRoom={navigateToRoom} />;
+      case 'admin': return <AdminDashboard />;
       case 'notifications':
         return (
           <div className="card animate-up" style={{ padding: '40px', textAlign: 'center' }}>

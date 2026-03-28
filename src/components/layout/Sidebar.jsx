@@ -12,7 +12,8 @@ import {
   Settings,
   User,
   LogOut,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -27,7 +28,7 @@ const MAIN_NAV = [
 
 
 
-export default function Sidebar({ currentTab, onNavigate, onLogout }) {
+export default function Sidebar({ currentTab, onNavigate, onLogout, user }) {
   return (
     <aside className="gemink-sidebar">
       <div className="sidebar-header">
@@ -54,6 +55,16 @@ export default function Sidebar({ currentTab, onNavigate, onLogout }) {
               {currentTab === item.id && <div className="active-arrow">›</div>}
             </button>
           ))}
+          {user?.role === 'admin' && (
+            <button
+              className={`nav-item ${currentTab === 'admin' ? 'active' : ''}`}
+              onClick={() => onNavigate('admin')}
+            >
+              <span className="nav-icon"><ShieldCheck size={20} /></span>
+              <span className="nav-label">Admin Panel</span>
+              {currentTab === 'admin' && <div className="active-arrow">›</div>}
+            </button>
+          )}
         </nav>
 
 

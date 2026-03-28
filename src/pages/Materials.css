@@ -700,3 +700,45 @@
     .mat-cards-grid { grid-template-columns: 1fr; }
     .mat-bubble { max-width: 85%; }
 }
+
+/* -- PDF Mode Badge -- */
+.mat-pdf-badge-row {
+    padding: 0 16px 12px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.mat-pdf-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F0FDF4; /* Light Emerald */
+    border: 1.5px solid #BBF7D0;
+    color: #166534; /* Dark Emerald */
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    animation: fadeUp 0.3s ease both;
+}
+
+.mat-pdf-close {
+    background: #DCFCE7;
+    border: none;
+    color: #166534;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 4px;
+}
+
+.mat-pdf-close:hover {
+    background: #166534;
+    color: white;
+}

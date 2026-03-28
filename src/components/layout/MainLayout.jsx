@@ -6,7 +6,7 @@ import './MainLayout.css';
 export default function MainLayout({ children, current, onNavigate, user, onLogout }) {
     return (
         <div className={`gemink-root ${current === 'messages' ? 'is-messages' : ''}`}>
-            <Sidebar currentTab={current} onNavigate={onNavigate} onLogout={onLogout} />
+            <Sidebar currentTab={current} onNavigate={onNavigate} onLogout={onLogout} user={user} />
 
             <div className="main-container">
                 {current !== 'messages' && current !== 'room-detail' && (

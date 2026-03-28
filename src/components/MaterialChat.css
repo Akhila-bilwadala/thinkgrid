@@ -1,0 +1,281 @@
+/* ── Overlay ── */
+.mchat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+
+/* ── Panel ── */
+.mchat-panel {
+  width: 420px;
+  height: 85vh;
+  max-height: 700px;
+  background: #0d0d0d;
+  border: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Space Mono', 'Courier New', monospace;
+  overflow: hidden;
+  animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Header ── */
+.mchat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: #111;
+  border-bottom: 1px solid #1e1e1e;
+  flex-shrink: 0;
+}
+
+.mchat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mchat-icon {
+  width: 36px;
+  height: 36px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.mchat-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+
+.mchat-subtitle {
+  font-size: 0.68rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.mchat-close {
+  background: transparent;
+  border: 1px solid #222;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.mchat-close:hover { border-color: #fff; color: #fff; }
+
+/* ── Messages ── */
+.mchat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  scroll-behavior: smooth;
+}
+
+.mchat-messages::-webkit-scrollbar { width: 4px; }
+.mchat-messages::-webkit-scrollbar-track { background: transparent; }
+.mchat-messages::-webkit-scrollbar-thumb { background: #2a2a2a; }
+
+.mchat-msg {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.mchat-msg.user {
+  flex-direction: row-reverse;
+}
+
+.mchat-avatar {
+  width: 28px;
+  height: 28px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mchat-msg.user .mchat-avatar {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.mchat-bubble {
+  max-width: 80%;
+  background: #161616;
+  border: 1px solid #222;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #ccc;
+}
+
+.mchat-bubble p { margin: 0 0 0.5rem; }
+.mchat-bubble p:last-child { margin: 0; }
+.mchat-bubble strong { color: #fff; }
+.mchat-bubble em { color: #aaa; font-style: italic; }
+
+.mchat-msg.user .mchat-bubble {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.mchat-msg.error .mchat-bubble {
+  background: rgba(255, 50, 50, 0.05);
+  border-color: rgba(255, 50, 50, 0.2);
+  color: #ff7070;
+}
+
+/* ── Typing indicator ── */
+.mchat-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.875rem 1rem !important;
+  min-width: 60px;
+}
+
+.mchat-typing span {
+  width: 6px;
+  height: 6px;
+  background: #555;
+  border-radius: 50%;
+  display: block;
+  animation: bounce 1.2s infinite;
+}
+
+.mchat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.mchat-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30%            { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Quick Prompts ── */
+.mchat-quick {
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-top: 1px solid #1a1a1a;
+  flex-shrink: 0;
+}
+
+.mchat-quick-btn {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #666;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.7rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.mchat-quick-btn:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* ── Input ── */
+.mchat-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid #1a1a1a;
+  flex-shrink: 0;
+  background: #0d0d0d;
+}
+
+.mchat-input {
+  flex: 1;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+  transition: border-color 0.2s;
+}
+
+.mchat-input::placeholder { color: #444; }
+.mchat-input:focus { border-color: #444; }
+
+.mchat-send {
+  width: 42px;
+  height: 42px;
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.mchat-send:hover:not(.disabled) { background: #ddd; }
+.mchat-send.disabled { opacity: 0.3; cursor: not-allowed; background: #333; border-color: #333; color: #666; }
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Footer ── */
+.mchat-footer {
+  text-align: center;
+  font-size: 0.62rem;
+  color: #333;
+  padding: 0.5rem;
+  border-top: 1px solid #111;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}

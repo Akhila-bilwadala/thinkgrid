@@ -86,8 +86,9 @@ export default function Materials() {
     const [uploadFile, setUploadFile] = useState(null);
     const [uploadingFile, setUploadingFile] = useState(false);
 
-    // Chat with Notes state
-    const [chatPdf, setChatPdf] = useState(null);
+    // Chat with AI state
+    const [chatMaterial, setChatMaterial] = useState(null);
+    const [activePdfContent, setActivePdfContent] = useState(null); // { text: string, fileName: string }
     const chatPdfRef = useRef(null);
 
     const [toastMessage, setToastMessage] = useState('');
@@ -128,32 +129,72 @@ export default function Materials() {
         }, delay);
     };
 
-    const handleChatPdfUpload = (e) => {
-        const selected = e.target.files?.[0];
-        if (selected) {
-            setChatPdf(selected);
-            setMessages([
-                { id: 'greeting', role: 'bot', type: 'greeting', text: null },
-                { id: Date.now(), role: 'bot', type: 'text', text: `📄 Processing **${selected.name}**...\n\nI'm ready! What would you like to know about this document?` }
-            ]);
-            showToast('PDF loaded for chat!');
+    const handleChatPdfUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsTyping(true);
+        addBotMessage('text', { text: `Reading **${file.name}**... Please wait a moment.` });
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/materials/extract-pdf`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to read PDF');
+
+            setActivePdfContent({ fileUri: data.fileUri, fileName: file.name });
+            addBotMessage('text', { text: `✅ Read **${file.name}** successfully!\n\nI'm now in PDF mode. Ask me anything about this document, or ask me to **"Summarize"** it.` });
+        } catch (err) {
+            console.error('PDF Read error:', err);
+            addBotMessage('text', { text: `❌ **Error reading file:** ${err.message}. Please make sure it's a valid text-based PDF.` });
+        } finally {
+            setIsTyping(false);
+            e.target.value = null;
         }
-        e.target.value = null;
     };
 
-    const handleSend = (query) => {
+    const handleSend = async (query) => {
         const q = (query || inputValue).trim();
         if (!q) return;
         setInputValue('');
 
         setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: q }]);
 
-        if (chatPdf) {
-            // Simulated PDF RAG response
-            addBotMessage('text', { text: `Based on my analysis of **${chatPdf.name}**:\n\nThis document primarily discusses related concepts about **"${q}"**. Integrating these principles involves consistent practices. *(Note: This is an AI simulation since no backend OCR is linked here yet!)*` });
+        // Mode 1: PDF Chat Mode
+        if (activePdfContent) {
+            setIsTyping(true);
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/materials/ask-pdf`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ fileUri: activePdfContent.fileUri, question: q })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'AI failed to answer');
+
+                addBotMessage('text', { text: data.answer });
+            } catch (err) {
+                addBotMessage('text', { text: `❌ **AI Error:** ${err.message}` });
+            } finally {
+                setIsTyping(false);
+            }
             return;
         }
 
+        // Mode 2: Standard Search Mode
         const matched = materials.filter(m =>
             m.title.toLowerCase().includes(q.toLowerCase()) ||
             m.tags?.some(t => t.toLowerCase().includes(q.toLowerCase())) ||
@@ -309,6 +350,7 @@ export default function Materials() {
                                                 onToggleSave={toggleSave}
                                                 onView={setSelectedMaterial}
                                                 onUpload={openUploadModal}
+                                                onChat={m.url?.startsWith('/uploads/') ? () => setChatMaterial(m) : null}
                                             />
                                         ))}
                                     </div>
@@ -331,18 +373,21 @@ export default function Materials() {
 
             {/* ── Input Bar ── */}
             <div className="mat-input-bar">
-                {chatPdf && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.8rem', color: '#10B981', fontWeight: 600 }}>
-                        <span style={{ padding: '4px 10px', background: '#ECFDF5', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <FileText size={14} /> Chatting with: {chatPdf.name}
-                            <button onClick={() => setChatPdf(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#6B7280', display: 'flex' }} title="Stop chatting with PDF"><X size={14} /></button>
-                        </span>
+                {activePdfContent && (
+                    <div className="mat-pdf-badge-row">
+                        <div className="mat-pdf-badge">
+                            <FileText size={12} />
+                            <span>PDF Mode: {activePdfContent.fileName}</span>
+                            <button className="mat-pdf-close" onClick={() => setActivePdfContent(null)}>
+                                <X size={12} />
+                            </button>
+                        </div>
                     </div>
                 )}
                 <div className="mat-input-wrap">
                     <input
                         className="mat-input"
-                        placeholder={chatPdf ? `Ask a question about ${chatPdf.name}...` : "Ask anything…"}
+                        placeholder={activePdfContent ? `Ask about ${activePdfContent.fileName}...` : "Ask anything…"}
                         value={inputValue}
                         onChange={e => setInputValue(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleSend()}
@@ -520,7 +565,15 @@ export default function Materials() {
                 <div className="mat-toast">{toastMessage}</div>
             )}
 
-            {/* Hidden Input for Chat with Notes */}
+            {/* ── AI PDF Chat Panel ── */}
+            {chatMaterial && (
+                <MaterialChat
+                    material={chatMaterial}
+                    onClose={() => setChatMaterial(null)}
+                />
+            )}
+
+            {/* Hidden Input for Chat with Notes (legacy, kept for compat) */}
             <input 
                 type="file" 
                 ref={chatPdfRef} 
