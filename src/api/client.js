@@ -17,7 +17,11 @@ client.interceptors.request.use((config) => {
     }
     // Let browser set the content-type automatically for FormData (with boundary)
     if (config.data instanceof FormData) {
-        delete config.headers['Content-Type'];
+        if (config.headers.delete) {
+          config.headers.delete('Content-Type');
+        } else {
+          delete config.headers['Content-Type'];
+        }
     }
     return config;
 }, (error) => {

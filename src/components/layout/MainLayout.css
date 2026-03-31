@@ -95,3 +95,14 @@
 .scroll-viewport::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
 }
+
+/* ── Mobile Spacing ── */
+@media (max-width: 768px) {
+    .top-bar {
+        padding: 16px 16px 0 16px;
+    }
+    
+    .scroll-viewport {
+        padding: 12px 16px 80px 16px;
+    }
+}

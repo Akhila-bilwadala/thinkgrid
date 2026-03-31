@@ -62,16 +62,38 @@ export default function RoomDetail({ room, onBack }) {
   }, [room._id, searchQuery]);
 
   const handleCreatePost = async () => {
-    if (!newPostText.trim()) return;
+    if (!newPostText.trim()) {
+      alert('Your inquiry contains no documentation. Please draft your findings in the text area before publishing.');
+      return;
+    }
     try {
-      await client.post(`/rooms/${room._id}/posts`, {
+      console.log('Publishing Inquiry', {
         title: newPostTitle,
         text: newPostText,
         tag: newPostTag,
+        hasFile: !!attachedFile
       });
+
+      if (attachedFile) {
+        const formData = new FormData();
+        formData.append('text', newPostText);
+        formData.append('title', newPostTitle);
+        formData.append('tag', newPostTag);
+        formData.append('image', attachedFile);
+        
+        await client.post(`/rooms/${room._id}/posts`, formData);
+      } else {
+        await client.post(`/rooms/${room._id}/posts`, {
+          text: newPostText,
+          title: newPostTitle,
+          tag: newPostTag
+        });
+      }
+
       setNewPostTitle('');
       setNewPostText('');
       setNewPostTag('Discussion');
+      setAttachedFile(null);
       setShowNewPost(false);
       fetchPosts(searchQuery);
     } catch (err) {
@@ -137,43 +159,33 @@ export default function RoomDetail({ room, onBack }) {
 
   return (
     <div className="rd-container animate-up">
-      {/* ── ULTRALIGHT RIBBON HEADER ── */}
-      <div className="rd-ribbon-header">
-        <div className="rd-ribbon-left">
-          <button className="rd-circle-back" onClick={onBack} title="Back to Rooms">
-            <ArrowLeft size={16} />
-          </button>
-          <div className="rd-ribbon-brand">
-            <div className="rd-ribbon-avatar">{getInitials(room.name)}</div>
-            <div className="rd-ribbon-text">
-              <h1>{room.name}</h1>
-            </div>
-          </div>
-          <div className="rd-filter-tabs">
-            <button className="rd-tab active" onClick={() => showToast('Showing all posts')}>All Posts</button>
-            <button className="rd-tab" onClick={() => showToast('Pinned posts filter coming soon!')}>Pinned</button>
-          </div>
-
+      {/* ── SCHOLARLY INQUIRY HEADER ── */}
+      <div className="rd-scholarly-header animate-up">
+        <button className="rd-floating-back" onClick={onBack} title="Back to Rooms">
+          <ArrowLeft size={18} />
+        </button>
+        
+        <div className="rd-header-content">
+          <h1 className="rd-room-title">{room.name}</h1>
+          <p className="rd-room-description">{room.description || 'Welcome to the central nexus of peer-to-peer technical problem solving. Here, errors are deconstructed and solutions are peer-reviewed for mathematical and logical rigor.'}</p>
         </div>
 
-        <div className="rd-ribbon-right">
-          <div className="rd-room-search">
+        <div className="rd-header-actions">
+          <div className="rd-mini-search">
             <Search size={14} />
             <input 
-              placeholder="Search..." 
+              placeholder="Search inquiry..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button className={`rd-create-btn ${showNewPost ? 'active' : ''}`} onClick={() => setShowNewPost(!showNewPost)}>
             {showNewPost ? <X size={16} /> : <Plus size={16} />}
-            {showNewPost ? 'Cancel' : 'Create'}
+            {showNewPost ? 'Cancel' : 'New Discussion'}
           </button>
-          <div className="rd-member-peek">
-            <button className="rd-leave-action-btn" onClick={handleLeaveRoom} title="Unjoin and Exit Room">
-              <LogOut size={14} /> Leave
-            </button>
-          </div>
+          <button className="rd-leave-btn" onClick={handleLeaveRoom} title="Leave Room">
+            <LogOut size={14} />
+          </button>
         </div>
       </div>
 
@@ -182,31 +194,31 @@ export default function RoomDetail({ room, onBack }) {
         {showNewPost ? (
           <div className="rd-inline-composer animate-up">
             <div className="rd-composer-header">
-              <span className="rd-mini-label">Post to community</span>
+              <span className="rd-mini-label">Scholarly Inquiry</span>
               <h2>New Discussion</h2>
             </div>
             
             <div className="rd-composer-body">
-              <div className="rd-input-group">
+              <div className="rd-document-inputs">
                 <input
-                  placeholder="New Discussion Title"
+                  placeholder="Inquiry Title..."
                   value={newPostTitle}
                   onChange={e => setNewPostTitle(e.target.value)}
                   className="rd-form-input"
                   autoFocus
                 />
                 <textarea
-                  placeholder="What's on your mind? Share details, ask for help, or post an update..."
+                  placeholder="Draft your inquiry here. Use precise terminology for peer review..."
                   value={newPostText}
                   onChange={e => setNewPostText(e.target.value)}
                   className="rd-form-textarea"
                 />
               </div>
 
-              <div className="rd-input-group">
-                <label>Category</label>
+              <div className="rd-taxonomy-section">
+                <label>Classification Taxonomy</label>
                 <div className="rd-picker-row">
-                  {[...Object.entries(TAG_CONFIG), ...customTags.map(t => [t, { label: t }])].map(([key, config]) => (
+                  {Object.entries(TAG_CONFIG).map(([key, config]) => (
                     <button
                       key={key}
                       onClick={() => setNewPostTag(key)}
@@ -215,33 +227,44 @@ export default function RoomDetail({ room, onBack }) {
                       {config.label}
                     </button>
                   ))}
+                  {customTags.map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setNewPostTag(t)}
+                      className={`rd-tag-choice ${newPostTag === t ? 'active' : ''}`}
+                    >
+                      {t}
+                    </button>
+                  ))}
                 </div>
               </div>
+              
               <div className="rd-tool-strip">
                  <button className="rd-tool-btn" onClick={() => fileInputRef.current?.click()}>
-                   <Paperclip size={14} /> {attachedFile ? attachedFile.name : 'Attach File'}
+                   <Paperclip size={14} /> {attachedFile ? attachedFile.name : 'Attach Image'}
                  </button>
                  <button className="rd-tool-btn" onClick={() => {
-                   const t = prompt('Add a custom tag:');
+                   const t = prompt('Define a custom taxonomy tag:');
                    if (t && !customTags.includes(t)) {
                      setCustomTags(prev => [...prev, t]);
                      setNewPostTag(t);
                    }
                  }}>
-                   <Tag size={14} /> Add Tags
+                   <Tag size={14} /> Add Tag
                  </button>
                  <input 
                    type="file" 
                    ref={fileInputRef} 
                    style={{ display: 'none' }} 
+                   accept="image/*"
                    onChange={(e) => setAttachedFile(e.target.files[0])}
                  />
               </div>
             </div>
             
             <div className="rd-composer-footer">
-              <button className="rd-cancel" onClick={() => setShowNewPost(false)}>Cancel</button>
-              <button className="rd-submit" onClick={handleCreatePost}>Publish Post</button>
+              <button className="rd-cancel" onClick={() => setShowNewPost(false)}>Discard</button>
+              <button className="rd-submit" onClick={handleCreatePost}>Publish Inquiry</button>
             </div>
           </div>
         ) : (
@@ -254,64 +277,72 @@ export default function RoomDetail({ room, onBack }) {
                 </div>
               </div>
             ) : posts.length > 0 ? posts.map(post => {
-          const isLiked = post.likedBy?.includes(user._id);
-          const tagInfo = TAG_CONFIG[post.tag] || TAG_CONFIG.Discussion;
-          
-          return (
-            <div key={post._id} className={`rd-post-item ${post.isPinned ? 'pinned' : ''}`}>
-              {post.isPinned && <div className="rd-pinned-label"><Pin size={10} /> Pinned by Moderator</div>}
-              
-              {/* Header */}
-              <div className="rd-post-head">
-                <div className="rd-post-author-info">
-                  <div className="rd-author-avatar">{getInitials(post.authorName)}</div>
-                  <span className="rd-author-name">s/{post.authorName?.replace(/\s+/g, '').toLowerCase() || 'thinker'}</span>
-                  <span className="rd-dot">•</span>
-                  <span className="rd-post-time">{timeAgo(post.createdAt)}</span>
+            const isLiked = post.likedBy?.includes(user?._id);
+            return (
+              <div key={post._id} className={`rd-scholarly-card ${post.tag === 'Error Help' ? 'error' : ''}`}>
+                <div className={`rd-card-status ${post.tag?.toLowerCase().replace(/\s+/g, '-')}`}>
+                   {post.tag === 'Error Help' ? 'LOGICAL PARADOX' : post.tag?.toUpperCase()}
                 </div>
-                <div className="rd-post-head-actions">
-                  <button className="rd-follow-btn" onClick={() => showToast(`Following ${post.authorName || 'user'}...`)}>Follow <Plus size={12} style={{marginLeft: 2}}/></button>
-                  <button className="rd-more-btn" onClick={() => showToast('More options coming soon!')}><MoreHorizontal size={16}/></button>
-                </div>
-
-              </div>
-
-              {/* Body */}
-              <div className="rd-post-body">
-                <div className="rd-post-text-content">
-                  {post.title && <h2 className="rd-post-title">{post.title}</h2>}
-                  <p className="rd-post-text">{post.text}</p>
-                </div>
-                {/* Optional image mock */}
-                <div className="rd-post-image-box">
-                  <div className="rd-post-img-placeholder"></div>
-                </div>
-              </div>
-
-              {/* Footer Actions */}
-              <div className="rd-post-foot">
-                <div className="rd-action-pill vote-pill">
-                  <button className={`rd-vote-up ${isLiked ? 'active' : ''}`} onClick={() => handleToggleLike(post._id)}>
-                     <ChevronUp size={18} />
-                  </button>
-                  <span className="rd-vote-count">{post.likedBy?.length || 0}</span>
-                  <button className="rd-vote-down" onClick={() => showToast('Downvoting is disabled for this room.')}><ChevronDown size={18} /></button>
+                <div className="rd-card-top">
+                  <div className="rd-card-author">
+                    <div className="rd-author-pic">
+                      {post.author?.picture ? (
+                        <img src={post.author.picture} alt={post.author.name} />
+                      ) : (
+                        getInitials(post.author?.name || post.authorName)
+                      )}
+                    </div>
+                    <div>
+                      <div className="rd-author-name">{post.author?.name || post.authorName}</div>
+                      <div className="rd-author-role">{post.author?.role || 'Elite Member'} • {timeAgo(post.createdAt)}</div>
+                    </div>
+                  </div>
                 </div>
 
-                
-                <button className="rd-action-pill" onClick={() => toggleReplies(post._id)}>
-                  <MessageSquare size={16} /> <span className="rd-action-count">{post.replies?.length || 0}</span>
-                </button>
-                
-                <button className="rd-action-pill" onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('Link copied to clipboard!'); }}>
-                  Share <Share2 size={14} style={{marginLeft: 4}}/>
-                </button>
+                <div className="rd-card-body">
+                  <h2 className="rd-card-title">{post.title || 'Inquiry Summary'}</h2>
+                  <p className="rd-card-desc">{post.text}</p>
+                  
+                  {/* Attachment Handling */}
+                  {post.tag === 'Error Help' ? (
+                    <div className="rd-attachment-frame">
+                      <div className="rd-frame-header">
+                        <span>CONSENSUS_ENGINE.RS</span>
+                        <span>Rust v1.74</span>
+                      </div>
+                      <div className="rd-frame-content">
+                        {/* If image exists, show it, otherwise placeholder code visual */}
+                        <div className="rd-img-wrap">
+                           {post.image ? <img src={post.image} alt="Inquiry Attachment" /> : (
+                             <pre className="rd-code-mock">
+                               <code>{`async fn aggregate_weights\n  let\n  let handles: Vec<_>\n    // FIXME: Deadlock occurring here under heavy load\n       async move\n          await`}</code>
+                             </pre>
+                           )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    post.image && (
+                      <div className="rd-standard-media">
+                        <img src={post.image} alt="Inquiry media" />
+                      </div>
+                    )
+                  )}
+                </div>
 
-
-                <button className="rd-action-icon" onClick={() => { setReplyingTo(post._id); setOpenReplies(p => ({...p, [post._id]: true})); }}>
-                  <Award size={16} />
-                </button>
-              </div>
+                <div className="rd-card-footer">
+                  <div className="rd-card-stats">
+                    <button className={`rd-stat-btn ${isLiked ? 'active' : ''}`} onClick={() => handleToggleLike(post._id)}>
+                       <ThumbsUp size={16} /> {post.likedBy?.length || 0}
+                    </button>
+                    <button className="rd-stat-btn" onClick={() => toggleReplies(post._id)}>
+                       <MessageSquare size={16} /> {post.replies?.length || 0} Discussions
+                    </button>
+                    <button className="rd-stat-btn" onClick={() => showToast('Share link copied!')}>
+                       <Share2 size={16} />
+                    </button>
+                  </div>
+                </div>
 
                   {/* 🧵 THREADED REPLIES */}
                   {openReplies[post._id] && (
@@ -320,10 +351,19 @@ export default function RoomDetail({ room, onBack }) {
                         const isReplyLiked = reply.likedBy?.includes(user._id);
                         return (
                           <div key={i} className="rd-reply-item">
-                            <div className="rd-reply-avatar-box">{getInitials(reply.authorName)}</div>
+                            <div className="rd-reply-avatar-box">
+                              {reply.author?.picture ? (
+                                <img src={reply.author.picture} alt={reply.author.name} />
+                              ) : (
+                                getInitials(reply.author?.name || reply.authorName)
+                              )}
+                            </div>
                             <div className="rd-reply-bubble">
                               <div className="rd-reply-header">
-                                <span className="rd-reply-user">{reply.authorName}</span>
+                                <div className="rd-reply-user-info">
+                                  <span className="rd-reply-user">{reply.author?.name || reply.authorName}</span>
+                                  <span className="rd-reply-role">{reply.author?.role || 'Member'}</span>
+                                </div>
                                 <span className="rd-reply-ago">{timeAgo(reply.createdAt)}</span>
                               </div>
                               <p className="rd-reply-msg">{reply.text}</p>

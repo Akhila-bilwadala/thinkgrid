@@ -426,23 +426,38 @@
 
 .status-pill.pending { background: #FFF7ED; color: #C2410C; }
 .status-pill.accepted { background: #ECFDF5; color: #059669; }
+.status-pill.reschedule_requested { background: #EEF2FF; color: #4338CA; }
+.status-pill.scheduled { background: #FAF5FF; color: #9333EA; }
 .status-pill.completed { background: #F0F9FF; color: #0284C7; }
 .status-pill.cancelled { background: #FEF2F2; color: #DC2626; }
 
-.item-actions {
+.ex-center-col {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
 }
 
+.item-actions.ex-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 250px;
+}
+
 .act-btn {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
     border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .act-btn.accept {
@@ -453,15 +468,87 @@
 .act-btn.accept:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 45, 85, 0.2);
+}
+
+.act-btn.outline {
+    background: transparent;
+    border: 1px solid var(--ana-soft);
+    color: var(--ana-text);
+}
+
+.act-btn.outline:hover {
+    background: #F0F0F0;
+}
+
+.act-btn.primary {
+    background: var(--ana-navy);
+    color: white;
+}
+
+.act-btn.text-error {
+    background: transparent;
+    color: var(--ana-coral);
+    padding: 8px;
+}
+
+.act-btn.text-error:hover {
+    background: rgba(255, 45, 85, 0.1);
+}
+
+.join-btn.active {
+    background: #10B981;
+    color: white;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    animation: pulse-green 2s infinite;
+}
+
+.join-btn.disabled {
+    background: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.reschedule-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F9FAFB;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+}
+
+.reschedule-box input {
+    padding: 6px 8px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.awaiting-lbl {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ana-soft);
+    font-style: italic;
+    padding: 8px 0;
 }
 
 .date-info {
     display: flex;
     align-items: center;
-    gap: 6px;
     color: var(--ana-soft);
     font-size: 0.75rem;
     font-weight: 600;
+    margin-top: 4px;
 }
 
 /* ── Bar Chart ── */
@@ -524,6 +611,104 @@
 }
 @keyframes spin { to { transform: rotate(360deg) } }
 
+/* ── Projects Tab Enhancements ── */
+.item-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.host-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    background: #000;
+    color: #FFF;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-pill {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+}
+
+.status-pill.pending {
+    background: #FFFBEB;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+}
+
+.pending-requests-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #E5E7EB;
+}
+
+.pending-requests-section h5 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #4B5563;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.request-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #F9FAFB;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.req-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.req-user img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.req-user span {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.btn-approve-sm {
+    background: #10B981;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-approve-sm:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.project-member-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ── Existing Styles Below ── */
 @media (max-width: 1100px) {
     .ana-summary-row { grid-template-columns: 1fr 1fr }
     .ana-bottom-grid { grid-template-columns: 1fr }

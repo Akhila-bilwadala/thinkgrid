@@ -89,7 +89,6 @@ export default function Materials() {
     // Chat with AI state
     const [chatMaterial, setChatMaterial] = useState(null);
     const [activePdfContent, setActivePdfContent] = useState(null); // { text: string, fileName: string }
-    const chatPdfRef = useRef(null);
 
     const [toastMessage, setToastMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -129,35 +128,33 @@ export default function Materials() {
         }, delay);
     };
 
-    const handleChatPdfUpload = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
+    const handleOptionSelect = async (action, label) => {
+        if (!activePdfContent?.file) return;
+
+        setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: `Please perform: ${label}` }]);
         setIsTyping(true);
-        addBotMessage('text', { text: `Reading **${file.name}**... Please wait a moment.` });
+
+        const formData = new FormData();
+        formData.append('file', activePdfContent.file);
+        formData.append('action', action);
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-
             const token = localStorage.getItem('token');
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/materials/extract-pdf`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/ai/process-document`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to read PDF');
+            if (!res.ok) throw new Error(data.error || 'AI failed to analyze document');
 
-            setActivePdfContent({ fileUri: data.fileUri, fileName: file.name });
-            addBotMessage('text', { text: `✅ Read **${file.name}** successfully!\n\nI'm now in PDF mode. Ask me anything about this document, or ask me to **"Summarize"** it.` });
+            addBotMessage('text', { text: data.result });
         } catch (err) {
-            console.error('PDF Read error:', err);
-            addBotMessage('text', { text: `❌ **Error reading file:** ${err.message}. Please make sure it's a valid text-based PDF.` });
+            addBotMessage('text', { text: `❌ **AI Error:** ${err.message}` });
         } finally {
             setIsTyping(false);
-            e.target.value = null;
         }
     };
 
@@ -316,7 +313,6 @@ export default function Materials() {
                                 <p className="mat-greeting-sub">Ask about a topic to find study materials or browse everything.</p>
                                 <div className="mat-quick-btns">
                                     <button className="mat-quick-btn" onClick={handleBrowseAll}>Browse all materials</button>
-                                    <button className="mat-quick-btn" onClick={() => chatPdfRef.current?.click()}>Chat with notes</button>
                                 </div>
                             </div>
                         );
@@ -339,6 +335,19 @@ export default function Materials() {
                                             __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                         }}
                                     />
+                                )}
+                                {msg.type === 'options' && (
+                                    <div className="mat-options-grid">
+                                        {msg.options.map(opt => (
+                                            <button 
+                                                key={opt.id} 
+                                                className="mat-option-btn"
+                                                onClick={() => handleOptionSelect(opt.id, opt.label)}
+                                            >
+                                                <strong>{opt.label}</strong>
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
                                 {msg.type === 'cards' && (
                                     <div className="mat-cards-grid">
@@ -573,14 +582,6 @@ export default function Materials() {
                 />
             )}
 
-            {/* Hidden Input for Chat with Notes (legacy, kept for compat) */}
-            <input 
-                type="file" 
-                ref={chatPdfRef} 
-                accept=".pdf,.txt" 
-                hidden 
-                onChange={handleChatPdfUpload} 
-            />
         </div>
     );
 }

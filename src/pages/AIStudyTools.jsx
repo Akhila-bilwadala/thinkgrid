@@ -80,7 +80,10 @@ const TRANSCRIPT_LINES = [
 ];
 
 export default function AIStudyTools() {
-    const [phase, setPhase] = useState('idle'); // idle | dragging | ready | generating | done
+    const [phase, setPhase] = useState('idle'); // idle | dragging | ready | selecting | generating | done
+    const [selectedAction, setSelectedAction] = useState(null);
+    const [aiResult, setAiResult] = useState('');
+    const [error, setError] = useState(null);
     const [file, setFile] = useState(null);
     const [progress, setProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -110,7 +113,7 @@ export default function AIStudyTools() {
 
     const isValidFile = (f) => {
         const ext = f.name.split('.').pop().toLowerCase();
-        return ['pdf', 'ppt', 'pptx'].includes(ext);
+        return ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'txt'].includes(ext);
     };
 
     const handleFileInput = (e) => {
@@ -129,27 +132,47 @@ export default function AIStudyTools() {
 
     const getFileExt = (f) => f?.name.split('.').pop().toUpperCase() || 'PDF';
 
-    const handleGenerate = () => {
+    const handleGenerate = async (action) => {
+        setSelectedAction(action);
         setPhase('generating');
         setProgress(0);
-        setActiveLine(0);
+        setError(null);
 
-        // Animate progress bar over ~3.5s
-        let p = 0;
-        progressIntervalRef.current = setInterval(() => {
-            p += Math.random() * 8 + 3;
-            if (p >= 100) {
-                p = 100;
-                clearInterval(progressIntervalRef.current);
-                setTimeout(() => {
-                    setProgress(100);
-                    setPhase('done');
-                    setIsPlaying(true);
-                    startTranscript();
-                }, 400);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('action', action);
+
+        try {
+            // Simulated progress while waiting for real API
+            const progInterval = setInterval(() => {
+                setProgress(prev => Math.min(prev + (Math.random() * 10), 95));
+            }, 300);
+
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/ai/process-document`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: formData
+            });
+
+            clearInterval(progInterval);
+            
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to analyze document');
             }
-            setProgress(Math.min(p, 100));
-        }, 120);
+
+            const data = await res.json();
+            setAiResult(data.result);
+            setProgress(100);
+            setPhase('done');
+            
+        } catch (err) {
+            setError(err.message);
+            setPhase('ready');
+        }
     };
 
     const startTranscript = () => {
@@ -241,10 +264,10 @@ export default function AIStudyTools() {
                         <p className="ast-dropzone-title">
                             {phase === 'dragging' ? 'Drop it here!' : 'Drag & drop your file'}
                         </p>
-                        <p className="ast-dropzone-sub">or click to browse — PDF, PPT, PPTX supported</p>
+                        <p className="ast-dropzone-sub">or click to browse — PDF, Word, and PPT supported</p>
                         <div className="ast-dropzone-formats">
                             <span className="ast-fmt-tag pdf">PDF</span>
-                            <span className="ast-fmt-tag ppt">PPT</span>
+                            <span className="ast-fmt-tag docx">WORD</span>
                             <span className="ast-fmt-tag pptx">PPTX</span>
                         </div>
                     </div>
@@ -270,11 +293,36 @@ export default function AIStudyTools() {
                 )}
 
                 {phase === 'ready' && (
-                    <button className="ast-generate-btn" onClick={handleGenerate}>
-                        <Sparkles size={18} />
-                        Generate Explanation &amp; Cheatsheet
-                        <ChevronRight size={18} />
-                    </button>
+                    <div className="ast-action-grid animate-up">
+                        <button className="ast-action-card summarize" onClick={() => handleGenerate('summarize')}>
+                            <div className="ast-action-icon"><FileText size={20} /></div>
+                            <div className="ast-action-text">
+                                <strong>Summarize</strong>
+                                <span>Get a high-level overview</span>
+                            </div>
+                        </button>
+                        <button className="ast-action-card cheatsheet" onClick={() => handleGenerate('cheatsheet')}>
+                            <div className="ast-action-icon"><Zap size={20} /></div>
+                            <div className="ast-action-text">
+                                <strong>Cheat Sheet</strong>
+                                <span>Dense exam-prep guide</span>
+                            </div>
+                        </button>
+                        <button className="ast-action-card mindmap" onClick={() => handleGenerate('mindmap')}>
+                            <div className="ast-action-icon"><Brain size={20} /></div>
+                            <div className="ast-action-text">
+                                <strong>Mindmap</strong>
+                                <span>Hierarchical concepts</span>
+                            </div>
+                        </button>
+                        <button className="ast-action-card doubts" onClick={() => handleGenerate('resolve_doubts')}>
+                            <div className="ast-action-icon"><Sparkles size={20} /></div>
+                            <div className="ast-action-text">
+                                <strong>Resolve Doubts</strong>
+                                <span>Conversational Q&amp;A</span>
+                            </div>
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -302,92 +350,39 @@ export default function AIStudyTools() {
 
             {/* ── Video Explanation ── */}
             {phase === 'done' && (
-                <>
-                    <div className="ast-section animate-up">
-                        <div className="ast-section-label">
-                            <span className="ast-step-num done">2</span>
-                            <h2>Video Explanation</h2>
-                        </div>
-                        <div className="ast-video-panel">
-                            <div className="ast-video-screen">
-                                <div className="ast-video-bg-pattern" />
-                                <div className="ast-video-center">
-                                    <button
-                                        className={`ast-play-btn ${isPlaying ? 'playing' : ''}`}
-                                        onClick={() => setIsPlaying(p => !p)}
-                                    >
-                                        {isPlaying ? <Pause size={28} /> : <Play size={28} />}
-                                    </button>
-                                    <p className="ast-video-label">
-                                        {file?.name.replace(/\.[^/.]+$/, '') || 'Document'} — AI Explanation
-                                    </p>
-                                </div>
-                                <div className="ast-video-badge">
-                                    <Sparkles size={12} /> AI Generated
-                                </div>
-                            </div>
-                            <div className="ast-transcript">
-                                <p className="ast-transcript-heading">📝 Auto Transcript</p>
-                                <div className="ast-transcript-lines">
-                                    {TRANSCRIPT_LINES.map((line, i) => (
-                                        <p
-                                            key={i}
-                                            className={`ast-transcript-line ${i === activeLine ? 'active' : i < activeLine ? 'past' : ''}`}
-                                        >
-                                            <span className="ast-tl-num">{String(i + 1).padStart(2, '0')}</span>
-                                            {line}
-                                        </p>
-                                    ))}
-                                </div>
-                            </div>
+                <div className="ast-result-full animate-up">
+                    <div className="ast-section-label">
+                        <span className="ast-step-num done">2</span>
+                        <h2>AI Analysis Result</h2>
+                        <div className="ast-section-actions">
+                            <button className="ast-action-btn" onClick={handleReset}>
+                                <RefreshCw size={15} /> New Document
+                            </button>
+                            <button className="ast-action-btn primary" onClick={() => {
+                                const blob = new Blob([aiResult], { type: 'text/plain' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement( 'a');
+                                a.href = url;
+                                a.download = 'ai-study-guide.txt';
+                                a.click();
+                            }}>
+                                <Download size={15} /> Download
+                            </button>
                         </div>
                     </div>
-
-                    {/* ── Cheatsheet ── */}
-                    <div className="ast-section animate-up">
-                        <div className="ast-section-label">
-                            <span className="ast-step-num done">3</span>
-                            <h2>AI-Generated Cheatsheet</h2>
-                            <div className="ast-section-actions">
-                                <button className="ast-action-btn" onClick={handleReset}>
-                                    <RefreshCw size={15} /> New Document
-                                </button>
-                                <button className="ast-action-btn primary" onClick={handleDownloadCheatsheet}>
-                                    <Download size={15} /> Download
-                                </button>
-                            </div>
+                    
+                    <div className="ast-result-card">
+                        <div className="ast-result-header">
+                            <Sparkles size={16} />
+                            <span>{selectedAction?.replace('_', ' ').toUpperCase()} Result</span>
                         </div>
-
-                        <div className="ast-cheat-header">
-                            <FileText size={16} />
-                            <span>{file?.name}</span>
-                        </div>
-
-                        <div className="ast-cheat-grid">
-                            {CHEATSHEET_TOPICS.map((topic) => {
-                                const Icon = topic.icon;
-                                return (
-                                    <div key={topic.id} className={`ast-cheat-card color-${topic.color}`}>
-                                        <div className="ast-cheat-card-head">
-                                            <div className="ast-cheat-icon">
-                                                <Icon size={18} />
-                                            </div>
-                                            <h3 className="ast-cheat-title">{topic.title}</h3>
-                                        </div>
-                                        <ul className="ast-cheat-list">
-                                            {topic.points.map((pt, i) => (
-                                                <li key={i}>
-                                                    <span className="ast-bullet" />
-                                                    {pt}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                );
-                            })}
+                        <div className="ast-result-content">
+                            <pre className="ast-markdown-pre">
+                                {aiResult}
+                            </pre>
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </div>
     );

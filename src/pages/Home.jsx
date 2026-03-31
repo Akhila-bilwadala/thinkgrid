@@ -6,6 +6,7 @@ import { getProfile, updateProfile, getAllUsers } from '../api/users';
 import { getMaterials } from '../api/materials';
 import { getRooms } from '../api/rooms';
 import { getLabs } from '../api/labs';
+import { createExchangeRequest } from '../api/exchanges';
 import { calculateElitePoints, getRank, calculateGlobalRank } from '../utils/pointsCalculator';
 
 const QUICK_SHORTCUTS = [
@@ -19,6 +20,7 @@ export default function Home({ onNavigate }) {
     const [skillTarget, setSkillTarget] = useState('');
     const [skillType, setSkillType] = useState('');
     const [credits, setCredits] = useState('50');
+    const [collabMsg, setCollabMsg] = useState({ type: '', text: '' });
     const [loading, setLoading] = useState(true);
 
     // Profile State
@@ -120,6 +122,51 @@ export default function Home({ onNavigate }) {
 
     const handleCancelProfile = () => {
         setIsEditingProfile(false);
+    };
+
+    const handleSendCollabRequest = async () => {
+        setCollabMsg({ type: '', text: '' });
+        if (!skillTarget || !skillType) {
+            setCollabMsg({ type: 'error', text: 'Please specify a user/email and a skill topic.' });
+            return;
+        }
+        try {
+            const allUsers = await getAllUsers();
+            
+            // Safer find: check if email/name exists before toLowerCase
+            const targetUser = allUsers.find(
+                u => (u.email && u.email.toLowerCase() === skillTarget.toLowerCase()) || 
+                     (u.name && u.name.toLowerCase() === skillTarget.toLowerCase())
+            );
+
+            if (!targetUser) {
+                setCollabMsg({ type: 'error', text: 'User not found. Try an exact name or email.' });
+                return;
+            }
+
+            if (targetUser._id === authUser._id) {
+                setCollabMsg({ type: 'error', text: 'You cannot send a request to yourself.' });
+                return;
+            }
+
+            await createExchangeRequest({
+                receiverId: targetUser._id,
+                topic: skillType,
+                credits: parseInt(credits) || 0
+            });
+
+            setCollabMsg({ type: 'success', text: 'Request sent successfully!' });
+            setSkillTarget('');
+            setSkillType('');
+            setCredits('50');
+            
+            // clear success msg after 4 sec
+            setTimeout(() => setCollabMsg({ type: '', text: '' }), 4000);
+        } catch (err) {
+            console.error('Error sending request:', err);
+            const errMsg = err.response?.data?.message || err.message || 'Failed to send request.';
+            setCollabMsg({ type: 'error', text: errMsg });
+        }
     };
 
     if (loading) return <div className="loading-state">Syncing Elite Status...</div>;
@@ -318,7 +365,13 @@ export default function Home({ onNavigate }) {
                             <span>Total: <strong>{Math.max(0, parseInt(credits || 0) + 5)} pts</strong></span>
                         </div>
 
-                        <button className="btn-send-collab">
+                        {collabMsg.text && (
+                            <div className={`collab-msg ${collabMsg.type}`} style={{ padding: '10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, marginTop: '10px', marginBottom: '10px', background: collabMsg.type === 'success' ? '#ECFDF5' : '#FEF2F2', color: collabMsg.type === 'success' ? '#059669' : '#DC2626' }}>
+                                {collabMsg.text}
+                            </div>
+                        )}
+
+                        <button className="btn-send-collab" onClick={handleSendCollabRequest}>
                             <Send size={15} />
                             Send Request
                         </button>

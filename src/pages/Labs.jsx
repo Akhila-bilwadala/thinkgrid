@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Users, Star, GitMerge, Code2, Globe, Database, ChevronRight, X, Github, Mail, User as UserIcon } from 'lucide-react';
 import './Labs.css';
 import { useAuth } from '../context/AuthContext';
-import { getLabs, createLab } from '../api/labs';
+import { getLabs, createLab, joinLab, getMyLabs } from '../api/labs';
 
 const FALLBACK_LABS = [
     {
@@ -13,24 +13,10 @@ const FALLBACK_LABS = [
         description: 'Building a community-driven platform for indexing free coding resources and roadmaps.',
         tags: ['React', 'Node.js', 'MongoDB'],
         status: 'OPEN',
-        members: 4,
+        members: [],
         maxMembers: 10,
         stars: 128,
         hostEmail: 'ravi.kumar@example.com'
-    },
-    {
-        _id: 'seed-2',
-        title: 'CryptoTracker API',
-        host: 'Sneha Reddy',
-        avatar: '/default-avatar.png',
-        description: 'A low-latency GraphQL API wrapper for aggregating real-time crypto prices across exchanges.',
-        tags: ['GraphQL', 'Go', 'Redis'],
-        status: 'CLOSED',
-        members: 3,
-        maxMembers: 3,
-        stars: 45,
-        repoUrl: 'https://github.com/SnehaReddy/cryptotracker-api',
-        hostEmail: 'sneha.reddy@example.com'
     }
 ];
 
@@ -46,6 +32,7 @@ export default function Labs() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('ALL'); // ALL, OPEN, CLOSED
     const [labs, setLabs] = useState([]);
+    const [myLabs, setMyLabs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showHostModal, setShowHostModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -54,7 +41,7 @@ export default function Labs() {
         repoUrl: '',
         maxMembers: 5,
         tags: '',
-        recruitDeadline: '', // ✅ New field
+        recruitDeadline: '', 
         host: user?.name || '',
         hostEmail: user?.email || '',
         avatar: user?.picture || ''
@@ -77,8 +64,9 @@ export default function Labs() {
 
     const fetchLabs = async () => {
         try {
-            const data = await getLabs();
+            const [data, userLabs] = await Promise.all([getLabs(), getMyLabs()]);
             setLabs(data.length > 0 ? data : FALLBACK_LABS);
+            setMyLabs(userLabs);
         } catch (err) {
             console.error('Error fetching labs:', err);
         } finally {
@@ -108,28 +96,45 @@ export default function Labs() {
                 avatar: user?.picture || ''
             });
             fetchLabs();
+            alert('Project hosted! Waiting for admin approval. View progress in Activity -> Projects.');
         } catch (err) {
             console.error('Error hosting project:', err);
             alert('Failed to host project. Please check all fields.');
         }
     };
 
-    const handleActionClick = (lab) => {
-        if (lab.status === 'OPEN') {
-            const subject = encodeURIComponent(`Request to join project: ${lab.title}`);
-            const body = encodeURIComponent(
-                `Hi ${lab.host},\n\nI would like to join your project "${lab.title}" on ThinkGrid.\n\nMy Portfolio: ${user?.portfolioUrl || 'Not specified'}\n\nBest regards,\n${user?.name || 'A ThinkGrid User'}`
-            );
-            window.location.href = `mailto:${lab.hostEmail}?subject=${subject}&body=${body}`;
-        } else if (lab.status === 'CLOSED' && lab.repoUrl) {
-            window.open(lab.repoUrl, '_blank');
+    const handleActionClick = async (lab) => {
+        const isMember = lab.members?.some(m => (m._id || m) === user._id);
+        const isPending = lab.pendingMembers?.some(m => (m._id || m) === user._id);
+
+        if (isMember) {
+            window.location.href = '/activity'; // Go to activity to see details
+            return;
+        }
+
+        if (isPending) {
+            alert('Your request is still pending host approval.');
+            return;
+        }
+
+        try {
+            await joinLab(lab._id);
+            alert('Join request sent to the host!');
+            fetchLabs();
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to join project.';
+            alert(msg);
         }
     };
 
     const filteredLabs = labs.filter(lab => {
         const matchesSearch = lab.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             lab.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesFilter = filter === 'ALL' ? true : lab.status === filter;
+        
+        const isFull = lab.members?.length >= lab.maxMembers;
+        const status = isFull ? 'CLOSED' : 'OPEN';
+        
+        const matchesFilter = filter === 'ALL' ? true : status === filter;
         return matchesSearch && matchesFilter;
     });
 
@@ -172,8 +177,8 @@ export default function Labs() {
                     <div key={lab._id || lab.id} className="lab-card">
                         <div className="lab-card-header">
                             <div className="lab-icon-box"><TagIcon tags={lab.tags} /></div>
-                            <div className={`lab-status ${lab.status.toLowerCase()}`}>
-                                {lab.status === 'OPEN' ? '● Open to Join' : 'Closed'}
+                            <div className={`lab-status ${(lab.members?.length >= lab.maxMembers) ? 'closed' : 'open'}`}>
+                                {lab.members?.length >= lab.maxMembers ? '● Full' : '● Open to Join'}
                             </div>
                         </div>
 
@@ -207,7 +212,7 @@ export default function Labs() {
                             <div className="lab-metrics">
                                 <div className="lab-metric" title="Contributors">
                                     <Users size={14} />
-                                    <span>{lab.members}/{lab.maxMembers}</span>
+                                    <span>{lab.members?.length || 0}/{lab.maxMembers}</span>
                                 </div>
                                 <div className="lab-metric" title="Stars">
                                     <Star size={14} />
@@ -217,22 +222,29 @@ export default function Labs() {
                         </div>
 
                         {/* Action Button */}
-                        <button 
-                            className={`lab-join-btn ${lab.status.toLowerCase()}`}
-                            onClick={() => handleActionClick(lab)}
-                        >
-                            {lab.status === 'OPEN' ? (
-                                <>
-                                    <span className="btn-dot">●</span>
-                                    JOIN
-                                </>
-                            ) : (
-                                <>
-                                    View Repository
-                                    <ChevronRight size={16} />
-                                </>
-                            )}
-                        </button>
+                        {(() => {
+                            const isMember = lab.members?.some(m => (m._id || m) === user._id);
+                            const isPending = lab.pendingMembers?.some(m => (m._id || m) === user._id);
+                            const isFull = lab.members?.length >= lab.maxMembers;
+
+                            return (
+                                <button 
+                                    className={`lab-join-btn ${isFull && !isMember ? 'closed' : 'open'}`}
+                                    onClick={() => handleActionClick(lab)}
+                                    disabled={isFull && !isMember && !isPending}
+                                >
+                                    {isMember ? (
+                                        <>ENTER PROJECT <ChevronRight size={16} /></>
+                                    ) : isPending ? (
+                                        <>PENDING APPROVAL</>
+                                    ) : isFull ? (
+                                        <>PROJECT FULL</>
+                                    ) : (
+                                        <><span className="btn-dot">●</span> JOIN</>
+                                    )}
+                                </button>
+                            );
+                        })()}
                     </div>
                 ))}
             </div>

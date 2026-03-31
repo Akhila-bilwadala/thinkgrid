@@ -52,13 +52,13 @@ export default function Rooms({ currentTab, onEnterRoom }) {
 
     const toggleJoin = async (id) => {
         const room = rooms.find(r => r._id === id);
-        const isJoined = room.members?.includes(user._id);
+        const isJoined = room.members?.some(m => (m._id || m).toString() === user._id.toString());
 
         try {
             if (isJoined) {
                 await leaveRoom(id);
                 setRooms(prev => prev.map(r => 
-                    r._id === id ? { ...r, members: r.members.filter(m => m !== user._id) } : r
+                    r._id === id ? { ...r, members: (r.members || []).filter(m => (m._id || m).toString() !== user._id.toString()) } : r
                 ));
             } else {
                 const updatedRoom = await joinRoom(id);
@@ -91,7 +91,7 @@ export default function Rooms({ currentTab, onEnterRoom }) {
         let filtered = rooms.filter(r => {
             const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                                   (r.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-            const isJoined = r.members?.includes(user._id);
+            const isJoined = r.members?.some(m => (m._id || m).toString() === user._id.toString());
             const matchesMyRooms = currentTab === 'my-rooms' ? isJoined : true;
             const matchesCat = activeCategory === 'All' ? true : getRoomCategory(r) === activeCategory;
             
@@ -167,7 +167,7 @@ export default function Rooms({ currentTab, onEnterRoom }) {
             {/* ── Layout Grid ── */}
             <div className="rooms-grid">
                 {displayedRooms.length > 0 ? displayedRooms.map(r => {
-                    const isJoined = r.members?.includes(user._id);
+                    const isJoined = r.members?.some(m => (m._id || m).toString() === user._id.toString());
                     const memberCount = r.members?.length || 0;
                     const cat = getRoomCategory(r);
 

@@ -742,3 +742,31 @@
     background: #166534;
     color: white;
 }
+
+/* ── Content Options Grid ── */
+.mat-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.mat-option-btn {
+    padding: 10px 18px;
+    background: #111827;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    box-shadow: 0 4px 12px rgba(17,24,39,0.18);
+}
+
+.mat-option-btn:hover {
+    background: #1F2937;
+    transform: translateY(-1px);
+}
+

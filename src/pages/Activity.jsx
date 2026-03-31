@@ -3,12 +3,12 @@ import {
   Search, MessageSquare, Trophy, Briefcase, 
   BookOpen, Target, MoreHorizontal, TrendingUp, 
   User, Layers, Share2, Plus, Bell, Fullscreen,
-  Code, Palette, FlaskConical
+  Code, Palette, FlaskConical, Clock, Video, Check, Calendar
 } from 'lucide-react';
 import './Activity.css';
 import { getRooms } from '../api/rooms';
 import { getMaterials } from '../api/materials';
-import { getLabs } from '../api/labs';
+import { getMyLabs, approveLabMember } from '../api/labs';
 import { getMyExchanges, updateExchangeStatus } from '../api/exchanges';
 import { useAuth } from '../context/AuthContext';
 import { calculateElitePoints } from '../utils/pointsCalculator';
@@ -17,51 +17,70 @@ export default function Activity({ onEnterRoom }) {
     const { user } = useAuth();
     const [joinedRooms, setJoinedRooms] = useState([]);
     const [savedNotes, setSavedNotes] = useState([]);
-    const [joinedLabs, setJoinedLabs] = useState([]);
+    const [myLabs, setMyLabs] = useState([]);
     const [exchanges, setExchanges] = useState([]);
     const [stats, setStats] = useState({ rooms: 0, notes: 0, projects: 0, contributions: 0 });
     const [points, setPoints] = useState(0);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Rooms');
+    const [rescheduleInput, setRescheduleInput] = useState({ id: null, date: '' });
+
+    const fetchActivity = async () => {
+        try {
+            const [allRooms, allMaterials, userLabs] = await Promise.all([
+                getRooms(), getMaterials(), getMyLabs()
+            ]);
+            
+            const myRooms = allRooms.filter(r => r.members?.some(m => (m._id || m).toString() === user._id.toString()));
+            setJoinedRooms(myRooms);
+            const mySaved = allMaterials.filter(m => m.savedBy?.some(sid => sid.toString() === user._id.toString()));
+            setSavedNotes(mySaved);
+            setMyLabs(userLabs);
+            
+            const exchData = await getMyExchanges();
+            setExchanges(exchData);
+            const myUploads = allMaterials.filter(m => m.uploadedBy === user._id);
+            
+            setStats({ 
+                rooms: myRooms.length, 
+                notes: mySaved.length, 
+                projects: userLabs.length, 
+                contributions: myUploads.length 
+            });
+            const totalPts = calculateElitePoints(myUploads, userLabs, myRooms);
+            setPoints(totalPts);
+
+        } catch (err) { 
+            console.error('Error fetching activity:', err); 
+        } finally { 
+            setLoading(false); 
+        }
+    };
 
     useEffect(() => {
-        const fetchActivity = async () => {
-            try {
-                const [allRooms, allMaterials, allLabs] = await Promise.all([
-                    getRooms(), getMaterials(), getLabs()
-                ]);
-                
-                const myRooms = allRooms.filter(r => r.members?.some(m => (m._id || m) === user._id));
-                setJoinedRooms(myRooms);
-                const mySaved = allMaterials.filter(m => m.savedBy?.includes(user._id));
-                setSavedNotes(mySaved);
-                const myLabs = allLabs.filter(l => l.host === user.name || l.members?.includes(user.name));
-                setJoinedLabs(myLabs);
-                const exchData = await getMyExchanges();
-                setExchanges(exchData);
-                const myUploads = allMaterials.filter(m => m.uploadedBy === user._id);
-                
-                setStats({ 
-                    rooms: myRooms.length, 
-                    notes: mySaved.length, 
-                    projects: myLabs.length, 
-                    contributions: myUploads.length 
-                });
-                const totalPts = calculateElitePoints(myUploads, myLabs, myRooms);
-                setPoints(totalPts);
-
-            } catch (err) { 
-                console.error('Error fetching activity:', err); 
-            } finally { 
-                setLoading(false); 
-            }
-        };
         fetchActivity();
     }, [user._id, user.name]);
 
-    const handleUpdateStatus = async (id, status) => {
+    const handleApproveMember = async (labId, userId) => {
         try {
-            await updateExchangeStatus(id, { status });
+            await approveLabMember(labId, userId);
+            fetchActivity();
+        } catch (err) {
+            console.error('Error approving member:', err);
+        }
+    };
+
+    const handleUpdateStatus = async (id, status, scheduleDate) => {
+        try {
+            const data = { status };
+            if (scheduleDate) data.scheduleDate = scheduleDate;
+            await updateExchangeStatus(id, data);
+            
+            // clear inline input
+            if (rescheduleInput.id === id) {
+                setRescheduleInput({ id: null, date: '' });
+            }
+            
             const updated = await getMyExchanges();
             setExchanges(updated);
         } catch (err) {
@@ -206,22 +225,65 @@ export default function Activity({ onEnterRoom }) {
                                 </div>
                             </div>
                         ))}
-                        {activeTab === 'Projects' && joinedLabs.map((lab, i) => (
-                            <div key={lab._id} className="ana-list-item">
-                                <div className="item-main">
-                                    <div className="item-icon-logo">
-                                        <Code size={18} color="white" />
+                        {activeTab === 'Projects' && myLabs.map((lab) => {
+                            const isHost = lab.createdBy === user._id || (lab.createdBy?._id === user._id);
+                            const isApprovedMember = lab.members?.some(m => (m._id || m) === user._id);
+                            const isPendingMember = lab.pendingMembers?.some(m => (m._id || m) === user._id);
+
+                            return (
+                                <div key={lab._id} className="ana-list-item project-item">
+                                    <div className="item-main">
+                                        <div className="item-icon-logo">
+                                            <Code size={18} color="white" />
+                                        </div>
+                                        <div className="item-info">
+                                            <div className="item-title-row">
+                                                <h4>{lab.title}</h4>
+                                                {isHost && <span className="host-tag">HOST</span>}
+                                                {!lab.isApproved && <span className="status-pill pending">Awaiting Admin Approval</span>}
+                                            </div>
+                                            <p>{lab.description?.substring(0, 60)}...</p>
+                                            
+                                            {isHost && lab.pendingMembers?.length > 0 && (
+                                                <div className="pending-requests-section">
+                                                    <h5>Join Requests ({lab.pendingMembers.length})</h5>
+                                                    {lab.pendingMembers.map(pm => (
+                                                        <div key={pm._id} className="request-row">
+                                                            <div className="req-user">
+                                                                <img src={pm.picture || 'https://via.placeholder.com/20'} alt="" />
+                                                                <span>{pm.name}</span>
+                                                            </div>
+                                                            <button 
+                                                                className="btn-approve-sm"
+                                                                onClick={(e) => { e.stopPropagation(); handleApproveMember(lab._id, pm._id); }}
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="item-info">
-                                        <h4>{lab.title || lab.name}</h4>
-                                        <p>Collaboration Project</p>
+                                    <div className="item-actions">
+                                        {isApprovedMember ? (
+                                            <div className="project-member-actions">
+                                                {lab.repoUrl && (
+                                                    <a href={lab.repoUrl} target="_blank" rel="noreferrer" className="ana-btn-enter outline">
+                                                        Repo Link
+                                                    </a>
+                                                )}
+                                                <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>View Project</button>
+                                            </div>
+                                        ) : isPendingMember ? (
+                                            <span className="status-pill pending">Request Sent</span>
+                                        ) : (
+                                            <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>Explorer</button>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="item-actions">
-                                    <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>Enter Project</button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {activeTab === 'Skills' && (
                             <div className="ana-exchange-list">
                                 {exchanges.length === 0 ? (
@@ -231,33 +293,89 @@ export default function Activity({ onEnterRoom }) {
                                         <button className="ana-btn-sm" onClick={() => window.location.href = '/explore'}>Explore Community</button>
                                     </div>
                                 ) : (
-                                    exchanges.map(ex => (
-                                        <div key={ex._id} className="ana-list-item exchange-item">
-                                            <div className="item-main">
-                                                <div className="item-avatar">
-                                                    <img src={(ex.sender._id === user._id ? ex.receiver.picture : ex.sender.picture) || '/bogdan.png'} alt="" />
-                                                </div>
-                                                <div className="item-info">
-                                                    <h4>{ex.topic}</h4>
-                                                    <p>{ex.sender._id === user._id ? `Request sent to ${ex.receiver.name}` : `Request from ${ex.sender.name}`}</p>
-                                                </div>
-                                            </div>
-                                            <span className={`status-pill ${ex.status}`}>{ex.status}</span>
-                                            <span className="item-stat">{ex.credits} Credits</span>
-                                            <div className="item-actions">
-                                                {ex.status === 'pending' && ex.receiver._id === user._id && (
-                                                    <button className="act-btn accept" onClick={() => handleUpdateStatus(ex._id, 'accepted')}>Accept</button>
-                                                )}
-                                                {ex.status === 'accepted' && (
-                                                    <div className="date-info">
-                                                        <Clock size={12} />
-                                                        <span>{new Date(ex.scheduleDate).toLocaleDateString()}</span>
+                                    exchanges.map(ex => {
+                                        const partner = ex.sender._id === user._id ? ex.receiver : ex.sender;
+                                        const iAmSender = ex.sender._id === user._id;
+                                        // determine turn
+                                        const isMyTurn = (ex.status === 'pending' || ex.status === 'reschedule_requested') && ex.proposedBy !== user._id;
+                                        
+                                        // duration & meeting active states
+                                        const now = new Date();
+                                        const sDate = new Date(ex.scheduleDate);
+                                        const diffMins = (now - sDate) / 60000;
+                                        const dur = ex.durationMinutes || 60;
+                                        const isMeetingActive = ex.status === 'scheduled' && diffMins > -15 && diffMins < dur;
+                                        const isPastMeeting = ex.status === 'scheduled' && diffMins >= dur;
+                                        
+                                        return (
+                                            <div key={ex._id} className="ana-list-item exchange-item">
+                                                <div className="item-main">
+                                                    <div className="item-avatar">
+                                                        <img src={partner.picture || '/bogdan.png'} alt="avatar" />
                                                     </div>
-                                                )}
+                                                    <div className="item-info">
+                                                        <h4>{ex.topic}</h4>
+                                                        <p>{iAmSender ? `Request sent to ${partner.name}` : `Request from ${partner.name}`}</p>
+                                                        {ex.scheduleDate && (
+                                                            <div className="date-info">
+                                                                <Calendar size={12} style={{marginRight:'4px'}}/>
+                                                                <span>Proposed: {new Date(ex.scheduleDate).toLocaleString()}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="ex-center-col">
+                                                    <span className={`status-pill ${ex.status}`}>{ex.status.replace('_', ' ')}</span>
+                                                    <span className="item-stat">{ex.credits} Credits</span>
+                                                </div>
+
+                                                <div className="item-actions ex-actions">
+                                                    {isMyTurn && !rescheduleInput.id && (
+                                                        <>
+                                                            <button className="act-btn accept" onClick={() => handleUpdateStatus(ex._id, 'scheduled')}>
+                                                                <Check size={14}/> Accept Time
+                                                            </button>
+                                                            <button className="act-btn outline" onClick={() => setRescheduleInput({ id: ex._id, date: ex.scheduleDate?.substring(0, 16) || '' })}>
+                                                                <Clock size={14}/> Suggest New Time
+                                                            </button>
+                                                        </>
+                                                    )}
+
+                                                    {rescheduleInput.id === ex._id && (
+                                                        <div className="reschedule-box">
+                                                            <input 
+                                                                type="datetime-local" 
+                                                                value={rescheduleInput.date} 
+                                                                onChange={(e) => setRescheduleInput({ ...rescheduleInput, date: e.target.value })}
+                                                            />
+                                                            <button className="act-btn primary" onClick={() => handleUpdateStatus(ex._id, 'reschedule_requested', rescheduleInput.date)}>Send</button>
+                                                            <button className="act-btn text-error" onClick={() => setRescheduleInput({ id: null, date: '' })}>Cancel</button>
+                                                        </div>
+                                                    )}
+
+                                                    {!isMyTurn && (ex.status === 'pending' || ex.status === 'reschedule_requested') && (
+                                                        <span className="awaiting-lbl">Awaiting Partner...</span>
+                                                    )}
+
+                                                    {ex.status === 'scheduled' && !isPastMeeting && (
+                                                        <button 
+                                                            className={`act-btn join-btn ${isMeetingActive ? 'active' : 'disabled'}`} 
+                                                            onClick={() => isMeetingActive ? window.open(ex.meetingLink, '_blank') : null}
+                                                            disabled={!isMeetingActive}
+                                                        >
+                                                            <Video size={14} /> 
+                                                            {isMeetingActive ? 'Join Meeting' : 'Starts Soon'}
+                                                        </button>
+                                                    )}
+                                                    
+                                                    {isPastMeeting && (
+                                                        <button className="act-btn accept" onClick={() => handleUpdateStatus(ex._id, 'completed')}>Mark Completed</button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <MoreHorizontal size={16} className="item-more" />
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
                         )}
