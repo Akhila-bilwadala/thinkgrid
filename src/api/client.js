@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// ─── API BASE CONFIGURATION ───
 const client = axios.create({
     baseURL: API_URL,
     headers: {
@@ -9,9 +10,10 @@ const client = axios.create({
     },
 });
 
-// ✅ Add token to every request if it exists
+// ─── AXIOS INTERCEPTOR: AUTH & HEADERS ───
 client.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    // Check for standard user token first, then fallback to adminToken
+    const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }

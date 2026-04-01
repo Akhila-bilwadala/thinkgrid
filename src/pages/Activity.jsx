@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Search, MessageSquare, Trophy, Briefcase, 
-  BookOpen, Target, MoreHorizontal, TrendingUp, 
-  User, Layers, Share2, Plus, Bell, Fullscreen,
-  Code, Palette, FlaskConical, Clock, Video, Check, Calendar
+    Search, MessageSquare, Trophy, Briefcase, 
+    BookOpen, Target, MoreHorizontal, TrendingUp, 
+    User, Layers, Share2, Plus, Bell, Fullscreen,
+    Code, Palette, FlaskConical, Clock, Video, Check, Calendar, Newspaper, ExternalLink, RefreshCw, XCircle
 } from 'lucide-react';
 import './Activity.css';
 import { getRooms } from '../api/rooms';
 import { getMaterials } from '../api/materials';
 import { getMyLabs, approveLabMember } from '../api/labs';
 import { getMyExchanges, updateExchangeStatus } from '../api/exchanges';
+import { getTechNews } from '../api/news';
 import { useAuth } from '../context/AuthContext';
 import { calculateElitePoints } from '../utils/pointsCalculator';
 
 export default function Activity({ onEnterRoom }) {
+    // ─── STATE MANAGEMENT ───
     const { user } = useAuth();
     const [joinedRooms, setJoinedRooms] = useState([]);
     const [savedNotes, setSavedNotes] = useState([]);
@@ -23,8 +25,11 @@ export default function Activity({ onEnterRoom }) {
     const [points, setPoints] = useState(0);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Rooms');
+    const [dailyNews, setDailyNews] = useState([]);
     const [rescheduleInput, setRescheduleInput] = useState({ id: null, date: '' });
+    const [activeRequestsId, setActiveRequestsId] = useState(null); // ✅ Added for project requests
 
+    // ─── DATA FETCHING LOGIC ───
     const fetchActivity = async () => {
         try {
             const [allRooms, allMaterials, userLabs] = await Promise.all([
@@ -50,6 +55,13 @@ export default function Activity({ onEnterRoom }) {
             const totalPts = calculateElitePoints(myUploads, userLabs, myRooms);
             setPoints(totalPts);
 
+            try {
+                const newsData = await getTechNews();
+                setDailyNews(newsData || []);
+            } catch (err) {
+                console.error('Failed to fetch news:', err);
+            }
+
         } catch (err) { 
             console.error('Error fetching activity:', err); 
         } finally { 
@@ -57,6 +69,7 @@ export default function Activity({ onEnterRoom }) {
         }
     };
 
+    // ─── EFFECTS ───
     useEffect(() => {
         fetchActivity();
     }, [user._id, user.name]);
@@ -95,6 +108,7 @@ export default function Activity({ onEnterRoom }) {
     return (
         <div className="ana-container">
             {/* Top Bar */}
+            {/* ─── HEADER SECTION ─── */}
             <header className="ana-header">
                 <h1>Activity</h1>
                 <div className="ana-header-actions">
@@ -106,6 +120,7 @@ export default function Activity({ onEnterRoom }) {
             </header>
 
             {/* Top Cards Row */}
+            {/* ─── SUMMARY ROW: POINTS & STATS ─── */}
             <div className="ana-summary-row">
                 <div className="ana-card ana-summary-main">
                     <div className="ana-card-head">
@@ -144,32 +159,32 @@ export default function Activity({ onEnterRoom }) {
                     </div>
                 </div>
 
+                {/* ─── DAILY TECH UPDATES: VIBRANT NEWS CARD ─── */}
                 <div className="ana-card ana-tech-card">
                     <div className="ana-card-head">
                         <span className="ana-lbl">Daily Tech Updates</span>
                         <TrendingUp size={16} />
                     </div>
                     <div className="ana-tech-list-wide">
-                        {[
-                            { title: "React 19 Stable", desc: "Improved Actions, Server Components, and the new React Compiler." },
-                            { title: "GPT-4o & GPT-5", desc: "OpenAI announces multi-modal improvements and next-gen reasoning." },
-                            { title: "AlphaFold 3", desc: "Scientific breakthrough in predicting molecular interactions." },
-                            { title: "Vision Pro 2", desc: "Next-gen immersive displays with significantly reduced weight." },
-                            { title: "Tailwind 4.0", desc: "A ground-up rewrite for maximum performance and zero configuration." }
-                        ].map((item, i) => (
-                            <div key={i} className="tech-item-wide">
-                                <div className="tech-dot"></div>
-                                <div className="tech-info">
-                                    <div className="tech-title">{item.title}</div>
-                                    <div className="tech-desc">{item.desc}</div>
+                        {dailyNews.length > 0 ? dailyNews.map((item, i) => (
+                            <a key={i} href={item.url} target="_blank" rel="noreferrer" className="tech-item-link-wide">
+                                <div className="tech-item-wide">
+                                    <div className="tech-dot"></div>
+                                    <div className="tech-info">
+                                        <div className="tech-title">{item.title}</div>
+                                        <div className="tech-desc">{item.source || 'TECH UPDATE'}</div>
+                                    </div>
+                                    <ExternalLink size={12} className="tech-link-icon" />
                                 </div>
-                            </div>
-                        ))}
+                            </a>
+                        )) : (
+                            <div className="ana-empty-small">No news updates yet.</div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Bottom Section */}
+            {/* ─── BOTTOM SECTION: TABS & LIST ─── */}
             <div className="ana-bottom-grid">
                 <div className="ana-card ana-list-card">
                     <div className="ana-tabs">
@@ -184,6 +199,7 @@ export default function Activity({ onEnterRoom }) {
                         ))}
                     </div>
                     
+                    {/* ─── TAB CONTENT LIST ─── */}
                     <div className="ana-list">
                         {activeTab === 'Rooms' && joinedRooms.map((room, i) => {
                             const text = (room.name + ' ' + (room.description || '')).toLowerCase();
@@ -226,9 +242,9 @@ export default function Activity({ onEnterRoom }) {
                             </div>
                         ))}
                         {activeTab === 'Projects' && myLabs.map((lab) => {
-                            const isHost = lab.createdBy === user._id || (lab.createdBy?._id === user._id);
-                            const isApprovedMember = lab.members?.some(m => (m._id || m) === user._id);
-                            const isPendingMember = lab.pendingMembers?.some(m => (m._id || m) === user._id);
+                            const isHost = lab.createdBy === user?._id || (lab.createdBy?._id === user?._id);
+                            const isApprovedMember = lab.members?.some(m => (m._id || m) === user?._id);
+                            const isPendingMember = lab.pendingMembers?.some(m => (m._id || m) === user?._id);
 
                             return (
                                 <div key={lab._id} className="ana-list-item project-item">
@@ -244,13 +260,13 @@ export default function Activity({ onEnterRoom }) {
                                             </div>
                                             <p>{lab.description?.substring(0, 60)}...</p>
                                             
-                                            {isHost && lab.pendingMembers?.length > 0 && (
-                                                <div className="pending-requests-section">
+                                            {isHost && lab.pendingMembers?.length > 0 && activeRequestsId === lab._id && (
+                                                <div className="pending-requests-section animate-up">
                                                     <h5>Join Requests ({lab.pendingMembers.length})</h5>
                                                     {lab.pendingMembers.map(pm => (
                                                         <div key={pm._id} className="request-row">
                                                             <div className="req-user">
-                                                                <img src={pm.picture || 'https://via.placeholder.com/20'} alt="" />
+                                                                <img src={pm.picture || 'https://via.placeholder.com/24'} alt="" />
                                                                 <span>{pm.name}</span>
                                                             </div>
                                                             <button 
@@ -266,24 +282,37 @@ export default function Activity({ onEnterRoom }) {
                                         </div>
                                     </div>
                                     <div className="item-actions">
-                                        {isApprovedMember ? (
-                                            <div className="project-member-actions">
-                                                {lab.repoUrl && (
-                                                    <a href={lab.repoUrl} target="_blank" rel="noreferrer" className="ana-btn-enter outline">
-                                                        Repo Link
-                                                    </a>
-                                                )}
-                                                <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>View Project</button>
-                                            </div>
-                                        ) : isPendingMember ? (
-                                            <span className="status-pill pending">Request Sent</span>
-                                        ) : (
-                                            <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>Explorer</button>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                {isHost ? (
+                    <div className="project-host-actions">
+                         {lab.pendingMembers?.length > 0 ? (
+                            <button 
+                                className={`ana-btn-enter ${activeRequestsId === lab._id ? 'active' : ''}`}
+                                onClick={() => setActiveRequestsId(activeRequestsId === lab._id ? null : lab._id)}
+                            >
+                                {activeRequestsId === lab._id ? 'Hide Requests' : `View Requests (${lab.pendingMembers.length})`}
+                            </button>
+                         ) : (
+                            <button className="ana-btn-enter outline" onClick={() => window.location.href = '/labs'}>Manage Project</button>
+                         )}
+                    </div>
+                ) : isApprovedMember ? (
+                    <div className="project-member-actions">
+                        {lab.repoUrl && (
+                            <a href={lab.repoUrl} target="_blank" rel="noreferrer" className="ana-btn-enter outline github-link">
+                                <Code size={14} /> Repo Link
+                            </a>
+                        )}
+                        <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>View Project</button>
+                    </div>
+                ) : isPendingMember ? (
+                    <span className="status-pill pending">Request Sent</span>
+                ) : (
+                    <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>Explorer</button>
+                )}
+            </div>
+        </div>
+    );
+})}
                         {activeTab === 'Skills' && (
                             <div className="ana-exchange-list">
                                 {exchanges.length === 0 ? (
@@ -317,10 +346,25 @@ export default function Activity({ onEnterRoom }) {
                                                         <h4>{ex.topic}</h4>
                                                         <p>{iAmSender ? `Request sent to ${partner.name}` : `Request from ${partner.name}`}</p>
                                                         {ex.scheduleDate && (
-                                                            <div className="date-info">
-                                                                <Calendar size={12} style={{marginRight:'4px'}}/>
-                                                                <span>Proposed: {new Date(ex.scheduleDate).toLocaleString()}</span>
+                                                            <div className="schedule-detail">
+                                                                <div className="date-info">
+                                                                    <Calendar size={12} style={{marginRight:'4px'}}/>
+                                                                    <span>{new Date(ex.scheduleDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                                                                </div>
+                                                                <div className="time-info">
+                                                                    <Clock size={12} style={{marginRight:'4px'}}/>
+                                                                    <span>
+                                                                        {new Date(ex.scheduleDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                                                        {' - '}
+                                                                        {new Date(new Date(ex.scheduleDate).getTime() + (ex.durationMinutes || 60) * 60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                                                    </span>
+                                                                </div>
                                                             </div>
+                                                        )}
+                                                        {ex.meetingLink && ex.status === 'scheduled' && (
+                                                            <a href={ex.meetingLink} target="_blank" rel="noreferrer" className="meet-link">
+                                                                <Video size={12} /> Join Google Meet
+                                                            </a>
                                                         )}
                                                     </div>
                                                 </div>
@@ -338,6 +382,9 @@ export default function Activity({ onEnterRoom }) {
                                                             </button>
                                                             <button className="act-btn outline" onClick={() => setRescheduleInput({ id: ex._id, date: ex.scheduleDate?.substring(0, 16) || '' })}>
                                                                 <Clock size={14}/> Suggest New Time
+                                                            </button>
+                                                            <button className="act-btn reject" onClick={() => handleUpdateStatus(ex._id, 'cancelled')}>
+                                                                <XCircle size={14}/> Reject Request
                                                             </button>
                                                         </>
                                                     )}
@@ -361,7 +408,7 @@ export default function Activity({ onEnterRoom }) {
                                                     {ex.status === 'scheduled' && !isPastMeeting && (
                                                         <button 
                                                             className={`act-btn join-btn ${isMeetingActive ? 'active' : 'disabled'}`} 
-                                                            onClick={() => isMeetingActive ? window.open(ex.meetingLink, '_blank') : null}
+                                                            onClick={() => isMeetingActive && ex.meetingLink ? window.open(ex.meetingLink, '_blank') : null}
                                                             disabled={!isMeetingActive}
                                                         >
                                                             <Video size={14} /> 
@@ -379,6 +426,7 @@ export default function Activity({ onEnterRoom }) {
                                 )}
                             </div>
                         )}
+
                     </div>
                 </div>
 

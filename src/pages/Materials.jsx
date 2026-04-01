@@ -195,8 +195,8 @@ export default function Materials() {
         const matched = materials.filter(m =>
             m.title.toLowerCase().includes(q.toLowerCase()) ||
             m.tags?.some(t => t.toLowerCase().includes(q.toLowerCase())) ||
-            m.category?.toLowerCase().includes(q.toLowerCase()) ||
-            m.instructor?.toLowerCase().includes(q.toLowerCase())
+            m.category?.toLowerCase()?.includes(q.toLowerCase()) ||
+            m.instructor?.toLowerCase()?.includes(q.toLowerCase())
         );
 
         if (matched.length === 0) {

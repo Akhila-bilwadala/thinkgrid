@@ -128,8 +128,8 @@ export default function Labs() {
     };
 
     const filteredLabs = labs.filter(lab => {
-        const matchesSearch = lab.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            lab.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (lab.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (lab.description || "").toLowerCase().includes(searchQuery.toLowerCase());
         
         const isFull = lab.members?.length >= lab.maxMembers;
         const status = isFull ? 'CLOSED' : 'OPEN';

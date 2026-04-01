@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, XCircle, CheckCircle, FileText, Users, FlaskConical, LogOut, RefreshCw, Sparkles } from 'lucide-react';
+import { ShieldCheck, XCircle, CheckCircle, FileText, Users, FlaskConical, LogOut, RefreshCw, Sparkles, Newspaper, ExternalLink, Save, Plus, Send } from 'lucide-react';
+import { getTechNews, updateTechNews } from '../api/news';
 import './AdminDashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -10,13 +11,21 @@ const getAuthHeader = () => {
 };
 
 const AdminDashboard = ({ adminUser, onLogout }) => {
+  // ─── STATE MANAGEMENT: COMMON ───
   const [activeTab, setActiveTab] = useState('materials');
   const [statusFilter, setStatusFilter] = useState('pending'); // 'pending' | 'accepted'
   const [pendingItems, setPendingItems] = useState({ materials: [], rooms: [], labs: [], inquiries: [] });
   const [acceptedItems, setAcceptedItems] = useState({ materials: [], rooms: [], labs: [], inquiries: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // ─── STATE MANAGEMENT: TECH NEWS ───
+  const [techNews, setTechNews] = useState([
+    { title: '', url: '', source: '' }
+  ]);
+  const [newsUpdating, setNewsUpdating] = useState(false);
 
+  // ─── DATA FETCHING ───
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -54,8 +63,59 @@ const AdminDashboard = ({ adminUser, onLogout }) => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  // ─── EFFECTS ───
+  useEffect(() => { 
+    fetchData(); 
+    const fetchNews = async () => {
+      try {
+        const data = await getTechNews();
+        if (data && data.length > 0) setTechNews(data);
+      } catch (err) { console.error('Error fetching news:', err); }
+    };
+    fetchNews();
+  }, []);
 
+  // ─── NEWS HANDLERS ───
+  const handleNewsUpdate = async (e) => {
+    e.preventDefault();
+    // Filter out items with no title or URL
+    const filteredNews = techNews.filter(n => n.title.trim() !== '' && n.url.trim() !== '');
+    if (filteredNews.length === 0) {
+      alert('Please provide at least one valid news item with a title and URL.');
+      return;
+    }
+    try {
+      setNewsUpdating(true);
+      await updateTechNews(filteredNews);
+      alert('Tech News Updated Successfully! 🚀');
+      setTechNews(filteredNews); // Updated local state with filtered list
+    } catch (err) {
+      alert('Failed to update Tech News: ' + err.message);
+    } finally {
+      setNewsUpdating(false);
+    }
+  };
+
+  const addNewsSlot = () => {
+    if (techNews.length < 5) {
+      setTechNews([...techNews, { title: '', url: '', source: '' }]);
+    }
+  };
+
+  const removeNewsSlot = (index) => {
+    if (techNews.length > 1) {
+      const updated = techNews.filter((_, i) => i !== index);
+      setTechNews(updated);
+    }
+  };
+
+  const updateNewsField = (index, field, value) => {
+    const updated = [...techNews];
+    updated[index][field] = value;
+    setTechNews(updated);
+  };
+
+  // ─── ITEM ACTIONS: APPROVE / REJECT ───
   const handleApprove = async (type, id) => {
     const token = localStorage.getItem('adminToken');
     const res = await fetch(`${API_URL}/admin/approve/${type}/${id}`, {
@@ -75,6 +135,7 @@ const AdminDashboard = ({ adminUser, onLogout }) => {
     if (res.ok) fetchData();
   };
 
+  // ─── HANDLERS: VIEW MATERIAL ───
   const handleViewMaterial = (item) => {
     if (item.url) {
       const baseUrl = API_URL.replace('/api', '');
@@ -102,7 +163,7 @@ const AdminDashboard = ({ adminUser, onLogout }) => {
 
   return (
     <div className="admin-dashboard">
-      {/* ── Top Bar ── */}
+      {/* ─── TOP BAR ─── */}
       <div className="admin-topbar">
         <div className="admin-brand">
           <ShieldCheck size={20} />
@@ -116,7 +177,7 @@ const AdminDashboard = ({ adminUser, onLogout }) => {
         </div>
       </div>
 
-      {/* ── Page Header ── */}
+      {/* ─── PAGE HEADER & CONTROLS ─── */}
       <header className="admin-header">
         <div>
           <h1>Content Moderation</h1>
@@ -143,7 +204,7 @@ const AdminDashboard = ({ adminUser, onLogout }) => {
         </div>
       </header>
 
-      {/* ── Tabs ── */}
+      {/* ─── TABS NAVIGATION ─── */}
       <nav className="admin-tabs">
         <button className={activeTab === 'materials' ? 'active' : ''} onClick={() => setActiveTab('materials')}>
           <FileText size={18} /> Materials
@@ -161,19 +222,84 @@ const AdminDashboard = ({ adminUser, onLogout }) => {
           <Sparkles size={18} /> Inquiries
           <span className="tab-count">{currentData.inquiries.length}</span>
         </button>
+        <button className={activeTab === 'techNews' ? 'active' : ''} onClick={() => setActiveTab('techNews')}>
+          <Newspaper size={18} /> Tech News
+        </button>
       </nav>
 
-      {/* ── Content ── */}
+      {/* ─── MAIN CONTENT AREA ─── */}
       <main className="admin-main">
         {loading && <div className="admin-state-msg">Loading submissions...</div>}
         {error && <div className="admin-state-msg error">{error}</div>}
-        {!loading && !error && items.length === 0 && (
+        {!loading && !error && activeTab === 'techNews' && (
+          <div className="admin-news-editor">
+            <div className="news-editor-header">
+              <h3>DAILY TECH NEWS (TOP 5)</h3>
+              <p>These will be visible to all users on their activity dashboard.</p>
+            </div>
+            <form onSubmit={handleNewsUpdate} className="news-form-grid">
+              <div className="news-items-container">
+                {techNews.map((n, idx) => (
+                  <div key={idx} className="news-input-group">
+                    <div className="group-num">#{idx + 1}</div>
+                    <div className="input-fields">
+                      <input 
+                        type="text" 
+                        placeholder="Headline Title" 
+                        value={n.title} 
+                        onChange={e => updateNewsField(idx, 'title', e.target.value)}
+                        required
+                      />
+                      <input 
+                        type="url" 
+                        placeholder="Article URL" 
+                        value={n.url} 
+                        onChange={e => updateNewsField(idx, 'url', e.target.value)}
+                        required
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Source (e.g. TechCrunch)" 
+                        value={n.source} 
+                        onChange={e => updateNewsField(idx, 'source', e.target.value)}
+                      />
+                    </div>
+                    {techNews.length > 1 && (
+                      <button type="button" className="remove-news-btn" onClick={() => removeNewsSlot(idx)}>
+                        <XCircle size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Sticky Publish Footer ── */}
+              <div className="news-editor-footer">
+                <div className="footer-left">
+                  {techNews.length < 5 && (
+                    <button type="button" className="admin-btn view add-slot-btn" onClick={addNewsSlot}>
+                     <Plus size={16}/> Add Another Slot
+                    </button>
+                  )}
+                </div>
+                <div className="footer-right">
+                  <button type="submit" className="admin-btn approve publish-btn" disabled={newsUpdating}>
+                    {newsUpdating ? <RefreshCw className="spin" size={16}/> : <Send size={16}/>}
+                    {newsUpdating ? ' Publishing...' : ' Publish Tech Updates'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+        {!loading && !error && activeTab !== 'techNews' && items.length === 0 && (
           <div className="admin-state-msg">
             <CheckCircle size={40} style={{ marginBottom: '1rem', opacity: 0.3 }} />
             <p>No {statusFilter} {activeTab} — you're all caught up!</p>
           </div>
         )}
         {!loading && !error && items.length > 0 && (
+          /* ─── TAB CONTENT: LISTING CARDS ─── */
           <div className="admin-grid">
             {items.map((item) => (
               <div key={item._id} className="admin-card">

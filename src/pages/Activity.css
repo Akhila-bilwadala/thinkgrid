@@ -428,6 +428,18 @@
 .status-pill.accepted { background: #ECFDF5; color: #059669; }
 .status-pill.reschedule_requested { background: #EEF2FF; color: #4338CA; }
 .status-pill.scheduled { background: #FAF5FF; color: #9333EA; }
+.status-pill.cancelled { background: #FEF2F2; color: #EF4444; }
+
+.act-btn.reject {
+    background: #FEF2F2;
+    color: #EF4444;
+    border: 1px solid #FEE2E2;
+}
+
+.act-btn.reject:hover {
+    background: #FEE2E2;
+    transform: translateY(-2px);
+}
 .status-pill.completed { background: #F0F9FF; color: #0284C7; }
 .status-pill.cancelled { background: #FEF2F2; color: #DC2626; }
 
@@ -549,6 +561,42 @@
     font-size: 0.75rem;
     font-weight: 600;
     margin-top: 4px;
+}
+
+.schedule-detail {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.time-info {
+    display: flex;
+    align-items: center;
+    color: var(--ana-coral);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.meet-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 4px 12px;
+    background: #EEF2FF;
+    color: #4338CA;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    width: fit-content;
+}
+
+.meet-link:hover {
+    background: #4338CA;
+    color: white;
 }
 
 /* ── Bar Chart ── */
@@ -719,4 +767,185 @@
     .ana-header-actions { display: none }
     .ana-list-item { grid-template-columns: 1.5fr 1fr auto }
     .item-cat, .item-stat { display: none }
+}
+
+/* ── Tech News Feed (Header) ── */
+.tech-item-link-wide {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s;
+}
+
+.tech-item-link-wide:hover {
+    transform: translateY(-2px);
+}
+
+.tech-item-wide {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.tech-link-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: var(--ana-coral);
+}
+
+.tech-item-link-wide:hover .tech-link-icon {
+    opacity: 1;
+}
+
+/* ── Tech News List (Tab Content) ── */
+.daily-news-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.news-list-item {
+    border-left: 4px solid var(--ana-coral) !important;
+}
+
+.news-icon {
+    background: var(--ana-navy) !important;
+}
+
+.news-date-badge {
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.ana-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--ana-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.ana-empty-small {
+    font-size: 0.8rem;
+    color: var(--ana-soft);
+    padding: 20px;
+    text-align: center;
+    background: rgba(0,0,0,0.02);
+    border-radius: 12px;
+}
+
+/* ─── Project Hosting Styles ─── */
+.project-host-actions, .project-member-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.github-link {
+    background: #24292e !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.github-link:hover {
+    background: #000 !important;
+    transform: translateY(-2px);
+}
+
+.pending-requests-section {
+    margin-top: 15px;
+    padding: 12px;
+    background: #F8FAFC;
+    border-radius: 10px;
+    border: 1px dashed #CBD5E1;
+}
+
+.pending-requests-section h5 {
+    font-size: 0.75rem;
+    color: #475569;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.request-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.request-row:last-child {
+    border-bottom: none;
+}
+
+.req-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.req-user img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.req-user span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1E293B;
+}
+
+.btn-approve-sm {
+    background: #10B981;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-approve-sm:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.animate-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ana-btn-enter.active {
+    background: #4B5563;
+    color: white;
 }

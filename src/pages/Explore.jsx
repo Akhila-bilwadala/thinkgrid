@@ -42,7 +42,7 @@ export default function Explore() {
         u._id !== user?._id &&
         u.role !== 'admin' &&
         (category === 'All' || u.rank === category || (category === 'Mentor' && u.rank?.includes('Mentor'))) &&
-        (u.name.toLowerCase().includes(query.toLowerCase()) || u.role?.toLowerCase().includes(query.toLowerCase()))
+        ((u.name || "").toLowerCase().includes(query.toLowerCase()) || u.role?.toLowerCase()?.includes(query.toLowerCase()))
     );
 
     const handleConnect = (name) => {
@@ -144,11 +144,8 @@ export default function Explore() {
                         </div>
 
                         <div className="mhub-actions-row">
-                            <button className="mhub-btn-ghost" onClick={() => handleConnect(u.name)}>
+                            <button className="mhub-btn-ghost single" onClick={() => handleConnect(u.name)}>
                                 Connect
-                            </button>
-                            <button className="mhub-btn-solid" onClick={() => handleExchange(u)}>
-                                Exchange
                             </button>
                         </div>
                     </div>
