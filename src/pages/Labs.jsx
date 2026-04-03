@@ -108,7 +108,11 @@ export default function Labs() {
         const isPending = lab.pendingMembers?.some(m => (m._id || m) === user._id);
 
         if (isMember) {
-            window.location.href = '/activity'; // Go to activity to see details
+            if (lab.repoUrl) {
+                window.open(lab.repoUrl, '_blank');
+            } else {
+                window.location.href = '/activity'; // Go to activity to see details
+            }
             return;
         }
 

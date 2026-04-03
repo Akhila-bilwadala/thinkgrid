@@ -292,7 +292,7 @@ export default function Activity({ onEnterRoom }) {
                                 {activeRequestsId === lab._id ? 'Hide Requests' : `View Requests (${lab.pendingMembers.length})`}
                             </button>
                          ) : (
-                            <button className="ana-btn-enter outline" onClick={() => window.location.href = '/labs'}>Manage Project</button>
+                            <button className="ana-btn-enter outline" onClick={() => lab.repoUrl ? window.open(lab.repoUrl, '_blank') : window.location.href = '/labs'}>Manage Project</button>
                          )}
                     </div>
                 ) : isApprovedMember ? (
@@ -302,7 +302,7 @@ export default function Activity({ onEnterRoom }) {
                                 <Code size={14} /> Repo Link
                             </a>
                         )}
-                        <button className="ana-btn-enter" onClick={() => window.location.href = '/labs'}>View Project</button>
+                        <button className="ana-btn-enter" onClick={() => lab.repoUrl ? window.open(lab.repoUrl, '_blank') : window.location.href = '/labs'}>View Project</button>
                     </div>
                 ) : isPendingMember ? (
                     <span className="status-pill pending">Request Sent</span>
